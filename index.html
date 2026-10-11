@@ -1,0 +1,28 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Scanner</title>
+<style>body{font-family:Tahoma,Arial,sans-serif;margin:0;padding:16px;background:#f5f3ef}
+input,select,button{width:100%;padding:12px;font-size:1rem;margin:6px 0;border:1px solid #bbb;border-radius:8px}
+#res{padding:18px;border-radius:12px;background:#fff;font-size:1.5rem;font-weight:bold;text-align:center;margin-top:12px}
+.ok{color:#176b35}.err{color:#a11}</style></head><body>
+<h2>Scanner</h2>
+<input id="key" type="password" placeholder="مفتاح الـ Scanner">
+<select id="day"><option value="fri">الجمعة</option><option value="sat">السبت</option></select>
+<div id="reader"></div><div id="res">امسح الكود</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script>
+// ضع هنا رابط الـ Web App (اللى بينتهى بـ /exec)
+const API_URL = 'https://script.google.com/macros/s/AKfycbxKHWEp63oF6N6-0M_CLovixy0LVCeX4dAjzl5izFkn/dev';
+const key = document.getElementById('key'), out = document.getElementById('res');
+key.value = localStorage.getItem('k') || ''; key.onchange = () => localStorage.setItem('k', key.value);
+let busy = false;
+async function onScan(code) {
+  if (busy) return; busy = true; out.className = ''; out.textContent = '...';
+  try {
+    const r = await (await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ key: key.value, code, day: document.getElementById('day').value }) })).json();
+    out.className = r.ok ? 'ok' : 'err'; out.textContent = r.msg;
+  } catch (e) { out.className = 'err'; out.textContent = 'خطأ فى الاتصال'; }
+  setTimeout(() => busy = false, 2000);
+}
+new Html5Qrcode('reader').start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, onScan);
+</script></body></html>
