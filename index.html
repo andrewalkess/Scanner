@@ -11,7 +11,7 @@ input,select,button{width:100%;padding:12px;font-size:1rem;margin:6px 0;border:1
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script>
 // ضع هنا رابط الـ Web App (اللى بينتهى بـ /exec)
-const API_URL = 'https://script.google.com/macros/s/AKfycbxg_eeSNPG5qU-P5lDPCDlix7ZA-JGVUeSTOamBKciOMAlSYrGbVEcTWbVTYVBDawDZPw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxVEBXExbkh9Qrlcxq1ciaHx1_6V-0jO3cV3-2a3mde1EDRjMGkqPuBWKUGG1i9nZ8LIw/exec';
 const key = document.getElementById('key'), out = document.getElementById('res');
 const fromLink = new URLSearchParams(location.hash.slice(1)).get('k');
 if (fromLink) { localStorage.setItem('k', fromLink); history.replaceState(null, '', location.pathname); }
