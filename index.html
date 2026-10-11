@@ -13,6 +13,8 @@ input,select,button{width:100%;padding:12px;font-size:1rem;margin:6px 0;border:1
 // ضع هنا رابط الـ Web App (اللى بينتهى بـ /exec)
 const API_URL = 'https://script.google.com/macros/s/AKfycbwzG8ctNJQBGjw5Cyw5GGVLth75YqaAQnwb7_t7f2_9o6njiwkUZof4s1QMlphwdIcdIg/exec';
 const key = document.getElementById('key'), out = document.getElementById('res');
+const fromLink = new URLSearchParams(location.hash.slice(1)).get('k');
+if (fromLink) { localStorage.setItem('k', fromLink); history.replaceState(null, '', location.pathname); }
 key.value = localStorage.getItem('k') || ''; key.onchange = () => localStorage.setItem('k', key.value);
 let busy = false;
 async function onScan(code) {
@@ -21,7 +23,7 @@ async function onScan(code) {
     const r = await (await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ key: key.value, code, day: document.getElementById('day').value }) })).json();
     out.className = r.ok ? 'ok' : 'err'; out.textContent = r.msg;
-  } catch (e) { out.className = 'err'; out.textContent = 'خطأ '; }
+  } catch (e) { out.className = 'err'; out.textContent = 'خطأ فى الاتصال'; }
   setTimeout(() => busy = false, 2000);
 }
 new Html5Qrcode('reader').start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, onScan);
