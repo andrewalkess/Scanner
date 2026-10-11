@@ -21,7 +21,7 @@ async function onScan(code) {
     const r = await (await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ key: key.value, code, day: document.getElementById('day').value }) })).json();
     out.className = r.ok ? 'ok' : 'err'; out.textContent = r.msg;
-  } catch (e) { out.className = 'err'; out.textContent = 'خطأ فى الاتصال'; }
+  } catch (e) { out.className = 'err'; out.textContent = 'خطأ '; }
   setTimeout(() => busy = false, 2000);
 }
 new Html5Qrcode('reader').start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, onScan);
