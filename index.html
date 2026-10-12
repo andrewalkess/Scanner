@@ -169,7 +169,8 @@ function homeView() {
           h('div', { class: 'kpis' },
             h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.entered)), h('small', {}, 'دخلوا')),
             h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.approved)), h('small', {}, 'تذاكر مؤكدة')),
-            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(Math.max(0, x.approved - x.entered))), h('small', {}, 'لسه ماجوش'))),
+            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(Math.max(0, x.approved - x.entered))), h('small', {}, 'لسه ماجوش')),
+            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.bus || 0)), h('small', {}, 'ركاب الباص (مؤكد)'))),
           h('p', { class: 'mut', style: 'margin:10px 0 0' }, 'نسبة الحضور من المؤكدين: ' + pct + '%'), h('div', { class: 'bar' }, h('i', { style: 'width:' + pct + '%' })),
           h('p', { class: 'mut', style: 'margin:0' }, 'المقاعد المؤكدة: ' + x.approved + ' من ' + x.capacity + ' (' + cap + '%)'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, cap) + '%;background:#c9a227' })));
       });
@@ -224,7 +225,7 @@ function ordersView() {
     else if (r.status === 'approved') { wa('واتساب (التذكرة)'); }
     return h('div', { class: 'item' },
       h('div', { style: 'display:flex;justify-content:space-between;gap:8px;align-items:center' }, h('span', { class: 'nm' }, r.name), h('span', { class: 'st st-' + r.status }, ST[r.status] || r.status)),
-      h('div', { class: 'mut' }, '#' + r.id + ' - يوم ' + r.day + ' - الإيصال: ' + (r.hasPay ? 'مرفوع' : (r.txref || 'لم يُرسل'))),
+      h('div', { class: 'mut' }, '#' + r.id + ' - يوم ' + r.day + (r.bus ? ' - باص' : ' - من غير باص') + ' - الإيصال: ' + (r.hasPay ? 'مرفوع' : (r.txref || 'لم يُرسل'))),
       r.usedAt ? h('div', { class: 'ok' }, 'دخل: ' + new Date(r.usedAt).toLocaleString('ar-EG')) : null, acts);
   }
   async function load() {
