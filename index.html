@@ -1,152 +1,332 @@
 <!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>دخول الايفنت</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f4d3a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<title>Together 11 - الإدارة</title>
 <style>
-*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;margin:0;background:#f5f3ef;color:#1d2433;line-height:1.7}
-main{max-width:520px;margin:0 auto;padding:16px}h1{font-size:1.4rem;margin:.2em 0}
-.box{background:#fff;border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 1px 4px #0001}
-label{display:block;margin:10px 0 4px;font-weight:bold}input,select,button{width:100%;padding:12px;font-size:1rem;border:1px solid #bbb;border-radius:8px;font-family:inherit}
-button{background:#1f4d3a;color:#fff;border:0;cursor:pointer;margin-top:10px}button.alt{background:#555}button:disabled{opacity:.5}
-.row{display:flex;align-items:center;gap:8px;margin-top:10px}.row input{width:auto}.row label{margin:0}
-#res{text-align:center;font-size:1.1rem}.big{font-size:2.2rem;font-weight:bold}
+:root{--g:#1f4d3a;--g2:#2e6b52;--bg:#f5f3ef;--tx:#1d2433;--mut:#667;--card:#fff;--y:#ffd54f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+#app{max-width:1100px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+header{background:var(--g);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+header h1{font-size:1.15rem;margin:0;flex:1}
+header button{width:auto;margin:0;background:#ffffff26;padding:7px 12px;font-size:.85rem}
+#view{flex:1;padding:14px 14px calc(86px + env(safe-area-inset-bottom))}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:6}
+nav button{flex:1;max-width:260px;background:none;color:var(--mut);border:0;border-radius:0;margin:0;padding:10px 4px;font-size:.85rem;font-weight:bold}
+nav button b{display:block;font-size:1.35rem;line-height:1.2}
+nav button.on{color:var(--g)}
+nav button.on b{transform:scale(1.1)}
+input,select,button{width:100%;padding:12px;font-size:1rem;border:1px solid #bbb;border-radius:10px;font-family:inherit;background:#fff;color:inherit}
+button{background:var(--g);color:#fff;border:0;cursor:pointer;margin-top:10px;font-weight:bold}
+button.alt{background:#555}button.red{background:#8a2b2b}button.ghost{background:#e8e6e1;color:var(--tx)}button:disabled{opacity:.5}
+label{display:block;margin:10px 0 4px;font-weight:bold}
+.box{background:var(--card);border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 1px 4px #0001}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:130px;margin-top:0}
+.seg{display:flex;gap:8px}.seg button{margin:0;background:#e8e6e1;color:var(--tx)}.seg button.on{background:var(--g);color:#fff}
+.err{color:#a11;font-weight:bold}.ok{color:#176b35;font-weight:bold}.mut{color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
+.item{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 4px #0001}
+.item .nm{font-size:1.1rem;font-weight:bold}
+.st{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:bold;font-size:.8rem}
+.st-review{background:#FFA726}.st-pending{background:#FFF176}.st-approved{background:#81C784}.st-rejected{background:#E57373}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.b{width:auto;flex:1;min-width:110px;margin:0;padding:9px 10px;font-size:.88rem;text-align:center;text-decoration:none;border-radius:9px;background:var(--g);color:#fff;font-weight:bold;border:0}
+.b.ghost{background:#e8e6e1;color:var(--tx)}.b.red{background:#8a2b2b}.b.wa{background:#25d366}
+.pg{display:flex;align-items:center;gap:10px;justify-content:center;margin:14px 0}.pg button{width:auto;margin:0;padding:9px 18px}
+.big{font-size:2.6rem;font-weight:900;line-height:1.1}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:10px}
+.kpi{background:#fff;border-radius:14px;padding:14px;text-align:center;box-shadow:0 1px 4px #0001}
+.kpi small{color:var(--mut);display:block}
+.bar{height:12px;background:#e6e3dc;border-radius:99px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--g2);border-radius:99px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{background:#fff;border-radius:999px;padding:6px 14px;box-shadow:0 1px 3px #0001;font-weight:bold}
+#res{text-align:center;font-size:1.1rem;transition:background .2s}#res .big{font-size:2.4rem}
 .good{background:#d9f3e1;color:#176b35}.bad{background:#fbe0e0;color:#a11}.wait{background:#fff;color:#555}
-#reader{width:100%;margin-top:10px}
-.item{background:#faf8f3;border:1px solid #e3ded3;border-radius:10px;padding:10px 12px;margin-top:8px}.item b{font-size:1.05rem}.item small{display:block;color:#555}.item .no{color:#a11;font-weight:bold}
-</style></head><body><main>
-<h1 id="title">دخول الايفنت</h1>
-<div id="res" class="box wait">جاهز</div>
-
-<div class="box">
-  <button id="camBtn">تشغيل الكاميرا لمسح التالى</button>
-  <div id="reader"></div>
-</div>
-
-<div class="box">
-  <label>لو الكود مش شغال: دوّر بالموبايل أو الاسم</label>
-  <input id="q" placeholder="رقم الموبايل (4 أرقام على الأقل) أو الاسم" autocomplete="off">
-  <button id="findBtn" class="alt">بحث</button>
-  <div id="found"></div>
-</div>
-
-<div class="box">
-  <label>المفتاح</label><input id="key" type="password" autocomplete="off">
-  <label>اليوم</label>
-  <select id="day"><option value="Friday">الجمعة</option><option value="Saturday">السبت</option></select>
-  <div class="row"><input id="prev" type="checkbox"><label for="prev">وضع المعاينة (من غير تسجيل دخول)</label></div>
-  <button id="goBtn" class="alt">تسجيل الدخول للكود الظاهر فى الرابط</button>
-</div>
-
+#reader{width:100%;margin-top:10px;border-radius:12px;overflow:hidden}
+.found{background:#faf8f3;border:1px solid #e3ded3;border-radius:10px;padding:10px 12px;margin-top:8px}
+.ov{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;z-index:20;padding:10px}
+.ovb{background:#fff;border-radius:14px;padding:12px;max-width:96vw;max-height:96vh;overflow:auto;text-align:center}
+.ovb img{max-width:100%;max-height:78vh}
+#toast{position:fixed;left:12px;right:12px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:30;display:flex;flex-direction:column;gap:8px;pointer-events:none;align-items:center}
+.tt{background:#222;color:#fff;padding:10px 16px;border-radius:12px;font-weight:bold;pointer-events:auto;max-width:520px}
+.tt a{color:#7dffaa}
+.login{max-width:420px;margin:0 auto;padding:30px 18px}
+.login h1{text-align:center;color:var(--g);margin:10px 0 0}
+</style></head><body>
+<div id="app"></div><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script>
-// ======= الصق هنا رابط الـ Web app بتاع Apps Script (اللى بينتهى بـ /exec) =======
+// ======= رابط الـ Web app بتاع Apps Script (اللى بينتهى بـ /exec) =======
 const APP_URL = 'https://script.google.com/macros/s/AKfycbzhOG6LUUf8TcIw6Hal3r6waD5HkAUV_uSf0IWS7qwVT5nMCD4Q3MgubraayKBfIJayrA/exec';
+const EVENT = 'Together 11';
 
-const $ = id => document.getElementById(id);
-const get = k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
-const put = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const $ = s => document.querySelector(s);
+const ls = { get: k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, put: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: k => { try { localStorage.removeItem(k); } catch (e) {} } };
+function h(t, a, ...c) { const e = document.createElement(t); for (const k in a || {}) { if (k.startsWith('on')) e[k] = a[k]; else if (a[k] != null) e.setAttribute(k, a[k]); } e.append(...c.flat().filter(x => x != null)); return e; }
+const errMsg = e => (e && e.message ? e.message : String(e)).replace(/^Error:\s*/, '');
 const tokenOf = s => { s = String(s || '').trim(); const m = s.match(/[?&]s=([0-9A-Za-z]+)/); return m ? m[1] : s; };
 
-$('key').value = get('sk');
-$('day').value = get('sd') || 'Friday';
-$('prev').checked = get('sp') === '1';
-const saveSettings = () => { put('sk', $('key').value); put('sd', $('day').value); put('sp', $('prev').checked ? '1' : '0'); };
-['key', 'day', 'prev'].forEach(i => $(i).addEventListener('change', saveSettings));
+const S = { role: '', cred: '', tab: '', day: ls.get('sd') || 'Friday', prev: ls.get('sp') === '1', f: { status: 'review', q: '', day: '', page: 1 }, urlToken: new URLSearchParams(location.search).get('s') || '' };
+let timer = null, scanner = null, busy = false;
 
-function showRes(cls, big, msg) {
-  const r = $('res'); r.className = 'box ' + cls;
-  r.innerHTML = ''; 
-  if (big) { const b = document.createElement('div'); b.className = 'big'; b.textContent = big; r.append(b); }
-  const p = document.createElement('div'); p.textContent = msg; r.append(p);
-  if (navigator.vibrate) navigator.vibrate(cls === 'good' ? 80 : [120, 60, 120]);
-}
-
-let busy = false;
-async function check(code) {
-  if (busy) return; busy = true;
-  saveSettings();
-  if (!$('key').value.trim()) { showRes('bad', '✖', 'اكتب المفتاح الأول'); busy = false; return; }
-  if (APP_URL.indexOf('PASTE') === 0) { showRes('bad', '✖', 'لازم تحط رابط الـ exec فى APP_URL داخل الملف'); busy = false; return; }
-  showRes('wait', '', 'جاري التحقق...');
+// ---------- الاتصال بالسيرفر ----------
+async function api(body, ms) {
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), ms || 25000);
   try {
-    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 20000);
-    const resp = await fetch(APP_URL, { method: 'POST', signal: ctl.signal,
-      body: JSON.stringify({ key: $('key').value, code: code, day: $('day').value, preview: $('prev').checked }) });
-    clearTimeout(to);
-    const r = await resp.json();
-    showRes(r.ok ? 'good' : 'bad', r.ok ? '✔ مسموح' : '✖ مرفوض', r.msg || '');
-  } catch (e) {
-    showRes('bad', '✖', 'تعذر الاتصال. شوف النت وجرّب تانى (ماتفترضش إن الكود اتسجل).');
-  }
-  busy = false;
+    const resp = await fetch(APP_URL, { method: 'POST', signal: ctl.signal, body: JSON.stringify(body) });
+    return await resp.json();
+  } finally { clearTimeout(to); }
+}
+const auth = () => S.role === 'admin' ? { pw: S.cred } : { key: S.cred };
+async function adm(action, extra) {
+  const r = await api(Object.assign({ action: action, pw: S.cred }, extra || {}));
+  if (!r.ok) throw new Error(r.msg || 'حصل خطأ');
+  return r.data;
 }
 
-// 1) لو الصفحة اتفتحت من QR بكاميرا الموبايل العادية (?s=التوكن)
-const urlToken = new URLSearchParams(location.search).get('s');
-function runUrlToken() { if (urlToken) check(urlToken); }
-$('goBtn').onclick = () => { if (urlToken) check(urlToken); else showRes('bad', '✖', 'مفيش كود فى الرابط. استخدم الكاميرا.'); };
-if (urlToken) {
-  if ($('key').value.trim()) { history.replaceState(null, '', location.pathname); check(urlToken); }   // بيشيل الكود من الرابط عشان إعادة التحميل ماتحسبش مرة تانية
-  else showRes('wait', '', 'اكتب المفتاح واختار اليوم، وبعدين دوس "تسجيل الدخول".');
+// ---------- أدوات واجهة ----------
+function toast(msg, ms, link) {
+  const t = h('div', { class: 'tt' }, msg, link ? h('a', { href: link, target: '_blank', rel: 'noopener' }, ' افتح واتساب') : null);
+  $('#toast').append(t); setTimeout(() => t.remove(), ms || (link ? 9000 : 3500));
 }
-
-// 2) مسح مستمر بالكاميرا من جوه الصفحة (أسرع فى الطابور)
-let scanner = null, last = '', lastAt = 0;
-$('camBtn').onclick = async () => {
-  if (scanner) { try { await scanner.stop(); } catch (e) {} scanner = null; $('reader').innerHTML = ''; $('camBtn').textContent = 'تشغيل الكاميرا لمسح التالى'; return; }
+function beep(ok) {
   try {
-    scanner = new Html5Qrcode('reader');
-    await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, text => {
-      const now = Date.now();
-      if (busy || (text === last && now - lastAt < 4000)) return;   // يتجاهل نفس الكود لو اتمسح تانى بسرعة
-      last = text; lastAt = now;
-      check(tokenOf(text));
-    }, () => {});
-    $('camBtn').textContent = 'إيقاف الكاميرا';
-  } catch (e) {
-    scanner = null; showRes('bad', '✖', 'الكاميرا ماشتغلتش. اسمح للمتصفح بالكاميرا.');
-  }
-};
-
-// 3) بديل لو الـ QR مش شغال: بحث بالموبايل أو الاسم وتسجيل الدخول يدوى (قارن الاسم بالبطاقة الشخصية قبل ما تسجل)
-async function api(body) {
-  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 20000);
-  try { const resp = await fetch(APP_URL, { method: 'POST', signal: ctl.signal, body: JSON.stringify(body) }); return await resp.json(); }
-  finally { clearTimeout(to); }
-}
-async function enterById(id) {
-  if (busy) return; busy = true; saveSettings();
-  showRes('wait', '', 'جاري التسجيل...');
-  try {
-    const r = await api({ action: 'enter', key: $('key').value, id: id, day: $('day').value, preview: $('prev').checked });
-    showRes(r.ok ? 'good' : 'bad', r.ok ? '✔ مسموح' : '✖ مرفوض', r.msg || '');
-    if (r.ok) { $('found').replaceChildren(); $('q').value = ''; }
-  } catch (e) {
-    showRes('bad', '✖', 'تعذر الاتصال. شوف النت وجرّب تانى (ماتفترضش إن الدخول اتسجل).');
-  }
-  busy = false;
-}
-$('findBtn').onclick = async () => {
-  saveSettings();
-  const q = $('q').value.trim(), box = $('found');
-  if (!$('key').value.trim()) return showRes('bad', '✖', 'اكتب المفتاح الأول');
-  if (q.length < 3) return showRes('bad', '✖', 'اكتب 4 أرقام على الأقل من الموبايل، أو 3 حروف من الاسم');
-  box.textContent = 'جاري البحث...';
-  try {
-    const r = await api({ action: 'find', key: $('key').value, query: q });
-    box.replaceChildren();
-    if (!r.ok) { box.textContent = r.msg || 'حصل خطأ'; return; }
-    if (!r.list.length) { box.textContent = 'مفيش تذكرة مؤكدة بالبيانات دى'; return; }
-    r.list.forEach(x => {
-      const it = document.createElement('div'); it.className = 'item';
-      const b = document.createElement('b'); b.textContent = x.name;
-      const sm = document.createElement('small'); sm.textContent = 'يوم ' + x.dayLabel + ' - الموبايل ينتهى بـ ' + x.phoneEnd;
-      it.append(b, sm);
-      if (x.used) { const n = document.createElement('div'); n.className = 'no'; n.textContent = 'دخل قبل كده (' + new Date(x.usedAt).toLocaleTimeString('ar-EG') + ')'; it.append(n); }
-      else if (x.day !== $('day').value) { const n = document.createElement('div'); n.className = 'no'; n.textContent = 'تذكرته ليوم ' + x.dayLabel; it.append(n); }
-      else { const bt = document.createElement('button'); bt.textContent = 'تسجيل دخول'; bt.onclick = () => enterById(x.id); it.append(bt); }
-      box.append(it);
+    const A = window.AudioContext || window.webkitAudioContext; if (!A) return;
+    const c = beep.c || (beep.c = new A()), t = c.currentTime;
+    (ok ? [[880, 0, .12]] : [[220, 0, .15], [220, .22, .15]]).forEach(([f, s, d]) => {
+      const o = c.createOscillator(), g = c.createGain(); o.frequency.value = f; o.type = 'square'; g.gain.value = .08;
+      o.connect(g); g.connect(c.destination); o.start(t + s); o.stop(t + s + d);
     });
-  } catch (e) { box.textContent = 'تعذر الاتصال. شوف النت وجرّب تانى.'; }
-};
-$('q').addEventListener('keydown', e => { if (e.key === 'Enter') $('findBtn').click(); });
-</script></main></body></html>
+  } catch (e) {}
+}
+function modal(src, cap) {
+  const ov = h('div', { class: 'ov', onclick: () => ov.remove() }, h('div', { class: 'ovb' }, h('p', {}, cap + ' (اضغط فى أى مكان للإغلاق)'), h('img', { src: src })));
+  document.body.append(ov);
+}
+const fmtTime = ms => new Date(ms).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
+// ---------- تسجيل الدخول ----------
+function loginView(msg) {
+  let role = ls.get('role') || 'admin';
+  const inp = h('input', { type: 'password', autocomplete: 'off', placeholder: 'الباسورد', onkeydown: e => { if (e.key === 'Enter') go(); } });
+  const m = h('p', { class: 'err' }, msg || '');
+  const seg = h('div', { class: 'seg' });
+  const draw = () => { seg.replaceChildren(
+    h('button', { class: role === 'admin' ? 'on' : '', onclick: () => { role = 'admin'; draw(); } }, 'أدمن'),
+    h('button', { class: role === 'security' ? 'on' : '', onclick: () => { role = 'security'; draw(); } }, 'أمن (سكانر)'));
+    inp.placeholder = role === 'admin' ? 'باسورد الأدمن' : 'مفتاح الـ scanner'; };
+  draw();
+  const btn = h('button', { onclick: () => go() }, 'دخول');
+  async function go() {
+    if (!inp.value.trim()) return;
+    btn.disabled = true; m.textContent = '';
+    try { await login(role, inp.value.trim()); }
+    catch (e) { m.textContent = errMsg(e); btn.disabled = false; }
+  }
+  $('#app').replaceChildren(h('div', { class: 'login' }, h('h1', {}, EVENT), h('p', { class: 'mut', style: 'text-align:center' }, 'لوحة الإدارة والسكانر'),
+    h('div', { class: 'box' }, seg, h('label', {}, 'الدخول'), inp, btn, m)));
+}
+async function login(role, cred) {
+  S.role = role; S.cred = cred;
+  if (role === 'admin') await adm('adminLogin');
+  else { const r = await api({ action: 'find', key: cred, query: 'x' }); if (!r.ok) throw new Error(r.msg || 'مفتاح غير صحيح'); }
+  ls.put('role', role); ls.put('cred', cred);
+  start();
+}
+function logout() { ls.del('cred'); S.role = ''; S.cred = ''; stopCam(); clearInterval(timer); loginView(); }
+
+// ---------- الهيكل ----------
+function start() {
+  const tabs = S.role === 'admin' ? [['home', '📊', 'الرئيسية'], ['orders', '📋', 'الطلبات'], ['scan', '📷', 'السكانر']] : [['scan', '📷', 'السكانر']];
+  const nav = h('nav', {}, ...tabs.map(t => h('button', { id: 'n-' + t[0], onclick: () => go(t[0]) }, h('b', {}, t[1]), t[2])));
+  const hd = h('header', {}, h('h1', {}, EVENT), h('button', { onclick: () => go(S.tab, true) }, 'تحديث'), h('button', { onclick: logout }, 'خروج'));
+  $('#app').replaceChildren(hd, h('div', { id: 'view' }), nav);
+  go(S.urlToken ? 'scan' : tabs[0][0]);
+}
+function go(tab, force) {
+  if (tab === S.tab && !force) return;
+  if (tab !== 'scan') stopCam();
+  clearInterval(timer);
+  S.tab = tab;
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.id === 'n-' + tab));
+  window.scrollTo(0, 0);
+  ({ home: homeView, orders: ordersView, scan: scanView })[tab]();
+}
+
+// ---------- الرئيسية (إحصائيات حية) ----------
+function homeView() {
+  const v = $('#view'); v.replaceChildren(h('p', { class: 'mut' }, 'جاري التحميل...'));
+  const load = async () => {
+    try {
+      const d = await adm('adminStats');
+      if (S.tab !== 'home') return;
+      const days = Object.keys(d.days).map(k => {
+        const x = d.days[k], pct = x.approved ? Math.round(x.entered * 100 / x.approved) : 0, cap = Math.round(x.approved * 100 / x.capacity);
+        return h('div', { class: 'box' }, h('h2', { style: 'margin:0 0 8px' }, 'يوم ' + x.label),
+          h('div', { class: 'kpis' },
+            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.entered)), h('small', {}, 'دخلوا')),
+            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.approved)), h('small', {}, 'تذاكر مؤكدة')),
+            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(Math.max(0, x.approved - x.entered))), h('small', {}, 'لسه ماجوش'))),
+          h('p', { class: 'mut', style: 'margin:10px 0 0' }, 'نسبة الحضور من المؤكدين: ' + pct + '%'), h('div', { class: 'bar' }, h('i', { style: 'width:' + pct + '%' })),
+          h('p', { class: 'mut', style: 'margin:0' }, 'المقاعد المؤكدة: ' + x.approved + ' من ' + x.capacity + ' (' + cap + '%)'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, cap) + '%;background:#c9a227' })));
+      });
+      const st = d.status, L = { review: 'مراجعة البطاقة', pending: 'بانتظار الدفع', approved: 'مؤكد', rejected: 'مرفوض' };
+      const chips = h('div', { class: 'chips' }, ...Object.keys(L).map(k => h('span', { class: 'chip' }, h('span', { class: 'st st-' + k, style: 'margin-left:6px' }, L[k]), String(st[k] || 0))), h('span', { class: 'chip' }, 'كل الطلبات: ' + d.total));
+      const recent = h('div', { class: 'box' }, h('h3', { style: 'margin:0 0 6px' }, 'آخر الداخلين'),
+        ...(d.recent.length ? d.recent.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + r.day + ' - ' + fmtTime(r.at)))) : [h('p', { class: 'mut' }, 'لسه محدش دخل')]));
+      v.replaceChildren(...days, h('div', { class: 'box' }, chips), recent, h('p', { class: 'mut', style: 'text-align:center;font-size:.8rem' }, 'بيتحدّث تلقائياً كل ١٥ ثانية - آخر تحديث ' + fmtTime(Date.now())));
+    } catch (e) { v.replaceChildren(h('p', { class: 'err' }, errMsg(e))); }
+  };
+  load(); timer = setInterval(load, 15000);
+}
+
+// ---------- الطلبات ----------
+function ordersView() {
+  const v = $('#view'), F = S.f;
+  const ST = { review: 'مراجعة البطاقة', pending: 'بانتظار الدفع', approved: 'مؤكد', rejected: 'مرفوض' };
+  const LBL = { review: 'مراجعة البطاقة', pending: 'بانتظار الدفع', approved: 'المؤكدة', rejected: 'المرفوضة', entered: 'اللى دخلوا', all: 'الكل' };
+  const opt = (val, t) => h('option', { value: val }, t);
+  let qt = null;
+  const q = h('input', { placeholder: 'بحث بالاسم أو رقم الموبايل', value: F.q, oninput: () => { clearTimeout(qt); qt = setTimeout(() => { F.q = q.value; F.page = 1; load(); }, 400); } });
+  const fs = h('select', { onchange: () => { F.status = fs.value; F.page = 1; load(); } }, ...Object.keys(LBL).map(k => opt(k, LBL[k])));
+  fs.value = F.status;
+  const fd = h('select', { onchange: () => { F.day = fd.value; F.page = 1; load(); } }, opt('', 'كل الأيام'), opt('Friday', 'الجمعة'), opt('Saturday', 'السبت'));
+  fd.value = F.day;
+  const list = h('div', { class: 'grid' }), info = h('span', { class: 'mut' });
+  const prevB = h('button', { class: 'ghost', onclick: () => { F.page--; load(); } }, 'السابق');
+  const nextB = h('button', { class: 'ghost', onclick: () => { F.page++; load(); } }, 'التالى');
+  v.replaceChildren(h('div', { class: 'row' }, q, fs, fd), h('div', { style: 'height:12px' }), list, h('div', { class: 'pg' }, prevB, info, nextB));
+
+  async function viewImg(fn, r, title) { try { modal(await adm(fn, { id: r.id }), r.name + ' - ' + title); } catch (e) { toast(errMsg(e)); } }
+  function card(r) {
+    const acts = h('div', { class: 'acts' });
+    const add = (t, fn, cls) => acts.append(h('button', { class: 'b ' + (cls || ''), onclick: fn }, t));
+    const wa = t => { if (r.wa) acts.append(h('a', { class: 'b wa', href: r.wa, target: '_blank', rel: 'noopener' }, t)); };
+    const act = (a, t, cls, openWa) => add(t, async ev => {
+      if (a === 'reject' && !confirm('رفض طلب ' + r.name + '؟')) return;
+      const btn = ev.currentTarget; btn.disabled = true;
+      const w = openWa ? window.open('', '_blank') : null;   // لازم يتفتح فورا مع الضغطة عشان المتصفح ما يمنعوش
+      try {
+        const x = await adm('adminAct', { id: r.id, act: a });
+        if (x.msg) toast(x.msg, 6000);
+        if (w) { if (x.wa) w.location = x.wa; else w.close(); }
+        else if (openWa && x.wa) toast('المتصفح منع فتح واتساب.', 9000, x.wa);
+      } catch (e) { if (w) w.close(); toast(errMsg(e)); }
+      load();
+    }, cls);
+    if (r.hasId) add('البطاقة', () => viewImg('adminGetId', r, 'البطاقة'), 'ghost');
+    if (r.hasPay) add('الإيصال', () => viewImg('adminGetPay', r, 'إيصال التحويل'), 'ghost');
+    if (r.status === 'review') { act('approveId', 'قبول + واتساب', '', true); act('reject', 'رفض', 'red'); }
+    else if (r.status === 'pending') { wa('واتساب (رابط الدفع)'); act('approve', 'تأكيد الدفع + واتساب', '', true); act('reject', 'رفض', 'red'); }
+    else if (r.status === 'approved') { wa('واتساب (التذكرة)'); }
+    return h('div', { class: 'item' },
+      h('div', { style: 'display:flex;justify-content:space-between;gap:8px;align-items:center' }, h('span', { class: 'nm' }, r.name), h('span', { class: 'st st-' + r.status }, ST[r.status] || r.status)),
+      h('div', { class: 'mut' }, '#' + r.id + ' - يوم ' + r.day + ' - الإيصال: ' + (r.hasPay ? 'مرفوع' : (r.txref || 'لم يُرسل'))),
+      r.usedAt ? h('div', { class: 'ok' }, 'دخل: ' + new Date(r.usedAt).toLocaleString('ar-EG')) : null, acts);
+  }
+  async function load() {
+    list.style.opacity = .5;
+    try {
+      const d = await adm('adminList', { filter: F.status, q: F.q, page: F.page, day: F.day });
+      F.page = d.page;
+      [...fs.options].forEach(o => { o.textContent = LBL[o.value] + ' (' + (d.counts[o.value] || 0) + ')'; });
+      info.textContent = 'صفحة ' + d.page + ' من ' + d.pages + ' (' + d.total + ' طلب)';
+      prevB.disabled = d.page <= 1; nextB.disabled = d.page >= d.pages;
+      list.replaceChildren(...(d.rows.length ? d.rows.map(card) : [h('p', { class: 'mut' }, 'لا توجد نتائج')]));
+    } catch (e) { toast(errMsg(e)); }
+    list.style.opacity = 1;
+  }
+  load();
+}
+
+// ---------- السكانر ----------
+function stopCam() { if (scanner) { try { scanner.stop(); } catch (e) {} scanner = null; } }
+function scanView() {
+  const v = $('#view');
+  const res = h('div', { id: 'res', class: 'box wait' }, 'جاهز');
+  const day = h('select', { onchange: save }, h('option', { value: 'Friday' }, 'الجمعة'), h('option', { value: 'Saturday' }, 'السبت'));
+  day.value = S.day;
+  const prev = h('input', { type: 'checkbox', style: 'width:auto', onchange: save }); prev.checked = S.prev;
+  function save() { S.day = day.value; S.prev = prev.checked; ls.put('sd', S.day); ls.put('sp', S.prev ? '1' : '0'); }
+  function show(cls, big, msg) {
+    res.className = 'box ' + cls; res.replaceChildren();
+    if (big) res.append(h('div', { class: 'big' }, big));
+    res.append(h('div', {}, msg));
+    if (cls === 'good' || cls === 'bad') { beep(cls === 'good'); if (navigator.vibrate) navigator.vibrate(cls === 'good' ? 80 : [120, 60, 120]); }
+  }
+  async function check(code) {
+    if (busy) return; busy = true; save();
+    show('wait', '', 'جاري التحقق...');
+    try {
+      const r = await api(Object.assign({ action: 'scan', code: code, day: S.day, preview: S.prev }, auth()), 20000);
+      show(r.ok ? 'good' : 'bad', r.ok ? '✔ مسموح' : '✖ مرفوض', r.msg || '');
+    } catch (e) { show('bad', '✖', 'تعذر الاتصال. شوف النت وجرّب تانى (ماتفترضش إن الكود اتسجل).'); }
+    busy = false;
+  }
+  async function enterById(id) {
+    if (busy) return; busy = true; save();
+    show('wait', '', 'جاري التسجيل...');
+    try {
+      const r = await api(Object.assign({ action: 'enter', id: id, day: S.day, preview: S.prev }, auth()), 20000);
+      show(r.ok ? 'good' : 'bad', r.ok ? '✔ مسموح' : '✖ مرفوض', r.msg || '');
+      if (r.ok) { found.replaceChildren(); q.value = ''; }
+    } catch (e) { show('bad', '✖', 'تعذر الاتصال. شوف النت وجرّب تانى (ماتفترضش إن الدخول اتسجل).'); }
+    busy = false;
+  }
+  const camBtn = h('button', { onclick: async () => {
+    if (scanner) { stopCam(); $('#reader').innerHTML = ''; camBtn.textContent = 'تشغيل الكاميرا لمسح التالى'; return; }
+    try {
+      scanner = new Html5Qrcode('reader'); let last = '', lastAt = 0;
+      await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, text => {
+        const now = Date.now();
+        if (busy || (text === last && now - lastAt < 4000)) return;   // يتجاهل نفس الكود لو اتمسح تانى بسرعة
+        last = text; lastAt = now; check(tokenOf(text));
+      }, () => {});
+      camBtn.textContent = 'إيقاف الكاميرا';
+    } catch (e) { scanner = null; show('bad', '✖', 'الكاميرا ماشتغلتش. اسمح للمتصفح بالكاميرا.'); }
+  } }, 'تشغيل الكاميرا لمسح التالى');
+  const q = h('input', { placeholder: 'رقم الموبايل (4 أرقام على الأقل) أو الاسم', autocomplete: 'off', onkeydown: e => { if (e.key === 'Enter') find(); } });
+  const found = h('div', {});
+  async function find() {
+    const t = q.value.trim(); save();
+    if (t.length < 3) return show('bad', '✖', 'اكتب 4 أرقام على الأقل من الموبايل، أو 3 حروف من الاسم');
+    found.textContent = 'جاري البحث...';
+    try {
+      const r = await api(Object.assign({ action: 'find', query: t }, auth()));
+      found.replaceChildren();
+      if (!r.ok) { found.textContent = r.msg || 'حصل خطأ'; return; }
+      if (!r.list.length) { found.textContent = 'مفيش تذكرة مؤكدة بالبيانات دى'; return; }
+      r.list.forEach(x => {
+        const it = h('div', { class: 'found' }, h('b', {}, x.name), h('div', { class: 'mut' }, 'يوم ' + x.dayLabel + ' - الموبايل ينتهى بـ ' + x.phoneEnd));
+        if (x.used) it.append(h('div', { class: 'err' }, 'دخل قبل كده (' + new Date(x.usedAt).toLocaleTimeString('ar-EG') + ')'));
+        else if (x.day !== S.day) it.append(h('div', { class: 'err' }, 'تذكرته ليوم ' + x.dayLabel));
+        else it.append(h('button', { onclick: () => enterById(x.id) }, 'تسجيل دخول'));
+        found.append(it);
+      });
+    } catch (e) { found.textContent = 'تعذر الاتصال. شوف النت وجرّب تانى.'; }
+  }
+  v.replaceChildren(res,
+    h('div', { class: 'box' }, h('div', { class: 'row' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'اليوم'), day)), camBtn, h('div', { id: 'reader' }),
+      h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal' }, prev, 'وضع المعاينة (من غير تسجيل دخول)')),
+    h('div', { class: 'box' }, h('label', { style: 'margin-top:0' }, 'لو الكود مش شغال: دوّر بالموبايل أو الاسم'), q, h('button', { class: 'alt', onclick: find }, 'بحث'), found,
+      h('p', { class: 'mut', style: 'font-size:.85rem;margin-bottom:0' }, 'قارن الاسم بالبطاقة الشخصية قبل ما تسجّل الدخول.')));
+  // لو الصفحة اتفتحت من QR بكاميرا الموبايل العادية (?s=التوكن)
+  if (S.urlToken) { const t = S.urlToken; S.urlToken = ''; history.replaceState(null, '', location.pathname); check(t); }
+}
+
+// ---------- التشغيل ----------
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+(async () => {
+  const role = ls.get('role'), cred = ls.get('cred');
+  if (role && cred) {
+    $('#app').replaceChildren(h('p', { class: 'mut', style: 'text-align:center;margin-top:40vh' }, 'جاري الدخول...'));
+    try { await login(role, cred); return; } catch (e) {
+      loginView(/(الباسورد|مفتاح)/.test(errMsg(e)) ? errMsg(e) : 'تعذر الاتصال. شوف النت وجرّب تانى.'); return;
+    }
+  }
+  loginView(S.urlToken ? 'سجّل الدخول (مفتاح الـ scanner) وهيتم فحص الكود تلقائى' : '');
+})();
+</script></body></html>
