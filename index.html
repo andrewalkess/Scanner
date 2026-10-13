@@ -81,6 +81,7 @@ const MSG = [
   [/^مسموح بالدخول: (.*)$/, m => 'Entry allowed: ' + m[1]], [/^صالح \(معاينة، لم يُسجَّل الدخول\): (.*)$/, m => 'Valid (preview, entry not recorded): ' + m[1]],
   [/^تم التأكيد لكن الإيميل لم يُرسل \((.*?)\)\./, m => 'Confirmed, but the email was not sent (' + m[1] + '). Use the WhatsApp button or Resend later.'],
   [/^انتهى حد الإيميلات اليومى$/, 'Daily email limit reached'],
+  [/^مفيش أعضاء فى المرحلة دى$/, 'No group members at this stage'],
 ];
 function tr(m) { m = String(m == null ? '' : m); for (const [re, f] of MSG) { const x = m.match(re); if (x) return typeof f === 'function' ? f(x) : f; } return m; }
 
@@ -235,13 +236,26 @@ function ordersView() {
       } catch (e) { if (w) w.close(); toast(errMsg(e)); }
       load();
     }, cls);
+    const actGroup = (a, t, cls) => add(t, async ev => {
+      if (!confirm(t + '?')) return;
+      const btn = ev.currentTarget; btn.disabled = true;
+      const w = window.open('', '_blank');
+      try {
+        const x = await adm('adminActGroup', { gid: r.gid, act: a });
+        toast('Done: ' + x.n + (x.skipped ? ', skipped ' + x.skipped + ' (day full)' : ''), 6000);
+        if (x.msg && !x.skipped) toast(tr(x.msg), 6000);
+        if (w) { if (x.wa) w.location = x.wa; else w.close(); }
+        else if (x.wa) toast('Browser blocked WhatsApp.', 9000, x.wa);
+      } catch (e) { if (w) w.close(); toast(errMsg(e)); }
+      load();
+    }, cls);
     if (r.hasId) add('ID card', () => viewImg('adminGetId', r, 'ID card'), 'ghost');
     if (r.hasPay) add('Receipt', () => viewImg('adminGetPay', r, 'Transfer receipt'), 'ghost');
-    if (r.status === 'review') { act('approveId', 'Approve + WhatsApp', '', true); act('reject', 'Reject', 'red'); }
-    else if (r.status === 'pending') { wa('WhatsApp (payment link)'); act('approve', 'Confirm payment + WhatsApp', '', true); act('reject', 'Reject', 'red'); }
+    if (r.status === 'review') { act('approveId', 'Approve + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gr > 1) actGroup('approveId', 'Approve all ' + r.gr + ' cards in group', 'ghost'); }
+    else if (r.status === 'pending') { wa('WhatsApp (payment link)'); act('approve', 'Confirm payment + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gp > 1) actGroup('approve', 'Confirm payment for all ' + r.gp + ' in group', 'ghost'); }
     else if (r.status === 'approved') { wa('WhatsApp (ticket)'); }
     return h('div', { class: 'item' },
-      h('div', { style: 'display:flex;justify-content:space-between;gap:8px;align-items:center' }, h('span', { class: 'nm' }, r.name), h('span', { class: 'st st-' + r.status }, ST[r.status] || r.status)),
+      h('div', { style: 'display:flex;justify-content:space-between;gap:8px;align-items:center' }, h('span', { class: 'nm' }, r.name, r.gid ? h('span', { class: 'chip', style: 'font-size:.75rem;margin-right:8px;padding:2px 10px' }, 'Group of ' + r.gn) : null), h('span', { class: 'st st-' + r.status }, ST[r.status] || r.status)),
       h('div', { class: 'mut' }, '#' + r.id + ' - ' + dEn(r.day) + (r.bus ? ' - Bus' : ' - No bus') + ' - Receipt: ' + (r.hasPay ? 'Uploaded' : (r.txref || 'Not sent'))),
       r.usedAt ? h('div', { class: 'ok' }, 'Checked in: ' + new Date(r.usedAt).toLocaleString('en-GB')) : null, acts);
   }
