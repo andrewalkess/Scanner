@@ -1,10 +1,10 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1f4d3a">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<title>Together 11 - الإدارة</title>
+<title>Together 11 - Admin</title>
 <style>
 :root{--g:#1f4d3a;--g2:#2e6b52;--bg:#f5f3ef;--tx:#1d2433;--mut:#667;--card:#fff;--y:#ffd54f}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -66,7 +66,24 @@ const EVENT = 'Together 11';
 const $ = s => document.querySelector(s);
 const ls = { get: k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, put: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: k => { try { localStorage.removeItem(k); } catch (e) {} } };
 function h(t, a, ...c) { const e = document.createElement(t); for (const k in a || {}) { if (k.startsWith('on')) e[k] = a[k]; else if (a[k] != null) e.setAttribute(k, a[k]); } e.append(...c.flat().filter(x => x != null)); return e; }
-const errMsg = e => (e && e.message ? e.message : String(e)).replace(/^Error:\s*/, '');
+const errMsg = e => tr((e && e.message ? e.message : String(e)).replace(/^Error:\s*/, ''));
+// ---- ترجمة رسائل السيرفر للإنجليزى ----
+const DAY_EN = { 'الجمعة': 'Friday', 'السبت': 'Saturday' };
+const dEn = x => DAY_EN[x] || x;
+const latin = t => String(t).replace(/[٠-٩]/g, c => '٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/م/g, 'PM').replace(/ص/g, 'AM');
+const MSG = [
+  [/^الباسورد غلط$/, 'Wrong password'], [/^مفتاح غير صحيح$/, 'Invalid key'], [/^كود غير صالح$/, 'Invalid code'], [/^تذكرة غير صالحة$/, 'Invalid ticket'],
+  [/^اليوم غير صحيح$/, 'Invalid day'], [/^اختار اليوم$/, 'Choose a day'], [/^خطأ فى الطلب$/, 'Request error'], [/^أمر غير معروف$/, 'Unknown command'],
+  [/^غير موجود$/, 'Not found'], [/^التذكرة مستخدمة$/, 'Ticket already used'], [/^الطلب مش فى المرحلة دى$/, 'Request is not at this stage'],
+  [/^اليوم اكتمل العدد$/, 'This day is full'], [/^لا توجد صورة$/, 'No image'], [/^لا توجد صورة تحويل$/, 'No transfer receipt'], [/^مفيش إيميل لإعادة إرساله$/, 'Nothing to resend'],
+  [/^الكود ليوم (.+)$/, m => 'Code is for ' + dEn(m[1])], [/^التذكرة ليوم (.+)$/, m => 'Ticket is for ' + dEn(m[1])],
+  [/^الكود مستخدم قبل كده \((.*)\)$/, m => 'Code already used (' + latin(m[1]) + ')'], [/^دخل قبل كده \((.*)\)$/, m => 'Already checked in (' + latin(m[1]) + ')'],
+  [/^مسموح بالدخول: (.*)$/, m => 'Entry allowed: ' + m[1]], [/^صالح \(معاينة، لم يُسجَّل الدخول\): (.*)$/, m => 'Valid (preview, entry not recorded): ' + m[1]],
+  [/^تم التأكيد لكن الإيميل لم يُرسل \((.*?)\)\./, m => 'Confirmed, but the email was not sent (' + m[1] + '). Use the WhatsApp button or Resend later.'],
+  [/^انتهى حد الإيميلات اليومى$/, 'Daily email limit reached'],
+];
+function tr(m) { m = String(m == null ? '' : m); for (const [re, f] of MSG) { const x = m.match(re); if (x) return typeof f === 'function' ? f(x) : f; } return m; }
+
 const tokenOf = s => { s = String(s || '').trim(); const m = s.match(/[?&]s=([0-9A-Za-z]+)/); return m ? m[1] : s; };
 
 const S = { role: '', cred: '', tab: '', day: ls.get('sd') || 'Friday', prev: ls.get('sp') === '1', f: { status: 'review', q: '', day: '', page: 1 }, urlToken: new URLSearchParams(location.search).get('s') || '' };
@@ -83,13 +100,13 @@ async function api(body, ms) {
 const auth = () => S.role === 'admin' ? { pw: S.cred } : { key: S.cred };
 async function adm(action, extra) {
   const r = await api(Object.assign({ action: action, pw: S.cred }, extra || {}));
-  if (!r.ok) throw new Error(r.msg || 'حصل خطأ');
+  if (!r.ok) throw new Error(r.msg || 'An error occurred');
   return r.data;
 }
 
 // ---------- أدوات واجهة ----------
 function toast(msg, ms, link) {
-  const t = h('div', { class: 'tt' }, msg, link ? h('a', { href: link, target: '_blank', rel: 'noopener' }, ' افتح واتساب') : null);
+  const t = h('div', { class: 'tt' }, msg, link ? h('a', { href: link, target: '_blank', rel: 'noopener' }, ' Open WhatsApp') : null);
   $('#toast').append(t); setTimeout(() => t.remove(), ms || (link ? 9000 : 3500));
 }
 function beep(ok) {
@@ -103,31 +120,31 @@ function beep(ok) {
   } catch (e) {}
 }
 function modal(src, cap) {
-  const ov = h('div', { class: 'ov', onclick: () => ov.remove() }, h('div', { class: 'ovb' }, h('p', {}, cap + ' (اضغط فى أى مكان للإغلاق)'), h('img', { src: src })));
+  const ov = h('div', { class: 'ov', onclick: () => ov.remove() }, h('div', { class: 'ovb' }, h('p', {}, cap + ' (tap anywhere to close)'), h('img', { src: src })));
   document.body.append(ov);
 }
-const fmtTime = ms => new Date(ms).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+const fmtTime = ms => new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
 // ---------- تسجيل الدخول ----------
 function loginView(msg) {
   let role = ls.get('role') || 'admin';
-  const inp = h('input', { type: 'password', autocomplete: 'off', placeholder: 'الباسورد', onkeydown: e => { if (e.key === 'Enter') go(); } });
+  const inp = h('input', { type: 'password', autocomplete: 'off', placeholder: 'Password', onkeydown: e => { if (e.key === 'Enter') go(); } });
   const m = h('p', { class: 'err' }, msg || '');
   const seg = h('div', { class: 'seg' });
   const draw = () => { seg.replaceChildren(
-    h('button', { class: role === 'admin' ? 'on' : '', onclick: () => { role = 'admin'; draw(); } }, 'أدمن'),
-    h('button', { class: role === 'security' ? 'on' : '', onclick: () => { role = 'security'; draw(); } }, 'أمن (سكانر)'));
-    inp.placeholder = role === 'admin' ? 'باسورد الأدمن' : 'مفتاح الـ scanner'; };
+    h('button', { class: role === 'admin' ? 'on' : '', onclick: () => { role = 'admin'; draw(); } }, 'Admin'),
+    h('button', { class: role === 'security' ? 'on' : '', onclick: () => { role = 'security'; draw(); } }, 'Security (scanner)'));
+    inp.placeholder = role === 'admin' ? 'Admin password' : 'Scanner key'; };
   draw();
-  const btn = h('button', { onclick: () => go() }, 'دخول');
+  const btn = h('button', { onclick: () => go() }, 'Sign in');
   async function go() {
     if (!inp.value.trim()) return;
     btn.disabled = true; m.textContent = '';
     try { await login(role, inp.value.trim()); }
     catch (e) { m.textContent = errMsg(e); btn.disabled = false; }
   }
-  $('#app').replaceChildren(h('div', { class: 'login' }, h('h1', {}, EVENT), h('p', { class: 'mut', style: 'text-align:center' }, 'لوحة الإدارة والسكانر'),
-    h('div', { class: 'box' }, seg, h('label', {}, 'الدخول'), inp, btn, m)));
+  $('#app').replaceChildren(h('div', { class: 'login' }, h('h1', {}, EVENT), h('p', { class: 'mut', style: 'text-align:center' }, 'Admin & scanner'),
+    h('div', { class: 'box' }, seg, h('label', {}, 'Credentials'), inp, btn, m)));
 }
 async function login(role, cred) {
   S.role = role; S.cred = cred;
@@ -140,9 +157,9 @@ function logout() { ls.del('cred'); S.role = ''; S.cred = ''; stopCam(); clearIn
 
 // ---------- الهيكل ----------
 function start() {
-  const tabs = S.role === 'admin' ? [['home', '📊', 'الرئيسية'], ['orders', '📋', 'الطلبات'], ['scan', '📷', 'السكانر']] : [['scan', '📷', 'السكانر']];
+  const tabs = S.role === 'admin' ? [['home', '📊', 'Dashboard'], ['orders', '📋', 'Orders'], ['scan', '📷', 'Scanner']] : [['scan', '📷', 'Scanner']];
   const nav = h('nav', {}, ...tabs.map(t => h('button', { id: 'n-' + t[0], onclick: () => go(t[0]) }, h('b', {}, t[1]), t[2])));
-  const hd = h('header', {}, h('h1', {}, EVENT), h('button', { onclick: () => go(S.tab, true) }, 'تحديث'), h('button', { onclick: logout }, 'خروج'));
+  const hd = h('header', {}, h('h1', {}, EVENT), h('button', { onclick: () => go(S.tab, true) }, 'Refresh'), h('button', { onclick: logout }, 'Log out'));
   $('#app').replaceChildren(hd, h('div', { id: 'view' }), nav);
   go(S.urlToken ? 'scan' : tabs[0][0]);
 }
@@ -158,27 +175,27 @@ function go(tab, force) {
 
 // ---------- الرئيسية (إحصائيات حية) ----------
 function homeView() {
-  const v = $('#view'); v.replaceChildren(h('p', { class: 'mut' }, 'جاري التحميل...'));
+  const v = $('#view'); v.replaceChildren(h('p', { class: 'mut' }, 'Loading...'));
   const load = async () => {
     try {
       const d = await adm('adminStats');
       if (S.tab !== 'home') return;
       const days = Object.keys(d.days).map(k => {
         const x = d.days[k], pct = x.approved ? Math.round(x.entered * 100 / x.approved) : 0, cap = Math.round(x.approved * 100 / x.capacity);
-        return h('div', { class: 'box' }, h('h2', { style: 'margin:0 0 8px' }, 'يوم ' + x.label),
+        return h('div', { class: 'box' }, h('h2', { style: 'margin:0 0 8px' }, dEn(x.label)),
           h('div', { class: 'kpis' },
-            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.entered)), h('small', {}, 'دخلوا')),
-            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.approved)), h('small', {}, 'تذاكر مؤكدة')),
-            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(Math.max(0, x.approved - x.entered))), h('small', {}, 'لسه ماجوش')),
-            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.bus || 0)), h('small', {}, 'ركاب الباص (مؤكد)'))),
-          h('p', { class: 'mut', style: 'margin:10px 0 0' }, 'نسبة الحضور من المؤكدين: ' + pct + '%'), h('div', { class: 'bar' }, h('i', { style: 'width:' + pct + '%' })),
-          h('p', { class: 'mut', style: 'margin:0' }, 'المقاعد المؤكدة: ' + x.approved + ' من ' + x.capacity + ' (' + cap + '%)'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, cap) + '%;background:#c9a227' })));
+            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.entered)), h('small', {}, 'Checked in')),
+            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.approved)), h('small', {}, 'Confirmed tickets')),
+            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(Math.max(0, x.approved - x.entered))), h('small', {}, 'Not arrived yet')),
+            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.bus || 0)), h('small', {}, 'Bus riders (confirmed)'))),
+          h('p', { class: 'mut', style: 'margin:10px 0 0' }, 'Attendance of confirmed: ' + pct + '%'), h('div', { class: 'bar' }, h('i', { style: 'width:' + pct + '%' })),
+          h('p', { class: 'mut', style: 'margin:0' }, 'Confirmed seats: ' + x.approved + ' of ' + x.capacity + ' (' + cap + '%)'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, cap) + '%;background:#c9a227' })));
       });
-      const st = d.status, L = { review: 'مراجعة البطاقة', pending: 'بانتظار الدفع', approved: 'مؤكد', rejected: 'مرفوض' };
-      const chips = h('div', { class: 'chips' }, ...Object.keys(L).map(k => h('span', { class: 'chip' }, h('span', { class: 'st st-' + k, style: 'margin-left:6px' }, L[k]), String(st[k] || 0))), h('span', { class: 'chip' }, 'كل الطلبات: ' + d.total));
-      const recent = h('div', { class: 'box' }, h('h3', { style: 'margin:0 0 6px' }, 'آخر الداخلين'),
-        ...(d.recent.length ? d.recent.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + r.day + ' - ' + fmtTime(r.at)))) : [h('p', { class: 'mut' }, 'لسه محدش دخل')]));
-      v.replaceChildren(...days, h('div', { class: 'box' }, chips), recent, h('p', { class: 'mut', style: 'text-align:center;font-size:.8rem' }, 'بيتحدّث تلقائياً كل ١٥ ثانية - آخر تحديث ' + fmtTime(Date.now())));
+      const st = d.status, L = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected' };
+      const chips = h('div', { class: 'chips' }, ...Object.keys(L).map(k => h('span', { class: 'chip' }, h('span', { class: 'st st-' + k, style: 'margin-left:6px' }, L[k]), String(st[k] || 0))), h('span', { class: 'chip' }, 'All requests: ' + d.total));
+      const recent = h('div', { class: 'box' }, h('h3', { style: 'margin:0 0 6px' }, 'Latest check-ins'),
+        ...(d.recent.length ? d.recent.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + dEn(r.day) + ' - ' + fmtTime(r.at)))) : [h('p', { class: 'mut' }, 'No one has checked in yet')]));
+      v.replaceChildren(...days, h('div', { class: 'box' }, chips), recent, h('p', { class: 'mut', style: 'text-align:center;font-size:.8rem' }, 'Auto-refreshes every 15 s - last update ' + fmtTime(Date.now())));
     } catch (e) { v.replaceChildren(h('p', { class: 'err' }, errMsg(e))); }
   };
   load(); timer = setInterval(load, 15000);
@@ -187,18 +204,18 @@ function homeView() {
 // ---------- الطلبات ----------
 function ordersView() {
   const v = $('#view'), F = S.f;
-  const ST = { review: 'مراجعة البطاقة', pending: 'بانتظار الدفع', approved: 'مؤكد', rejected: 'مرفوض' };
-  const LBL = { review: 'مراجعة البطاقة', pending: 'بانتظار الدفع', approved: 'المؤكدة', rejected: 'المرفوضة', entered: 'اللى دخلوا', all: 'الكل' };
+  const ST = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected' };
+  const LBL = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected', entered: 'Checked in', all: 'All' };
   const opt = (val, t) => h('option', { value: val }, t);
   let qt = null;
-  const q = h('input', { placeholder: 'بحث بالاسم أو رقم الموبايل', value: F.q, oninput: () => { clearTimeout(qt); qt = setTimeout(() => { F.q = q.value; F.page = 1; load(); }, 400); } });
+  const q = h('input', { placeholder: 'Search by name or phone', value: F.q, oninput: () => { clearTimeout(qt); qt = setTimeout(() => { F.q = q.value; F.page = 1; load(); }, 400); } });
   const fs = h('select', { onchange: () => { F.status = fs.value; F.page = 1; load(); } }, ...Object.keys(LBL).map(k => opt(k, LBL[k])));
   fs.value = F.status;
-  const fd = h('select', { onchange: () => { F.day = fd.value; F.page = 1; load(); } }, opt('', 'كل الأيام'), opt('Friday', 'الجمعة'), opt('Saturday', 'السبت'));
+  const fd = h('select', { onchange: () => { F.day = fd.value; F.page = 1; load(); } }, opt('', 'All days'), opt('Friday', 'Friday'), opt('Saturday', 'Saturday'));
   fd.value = F.day;
   const list = h('div', { class: 'grid' }), info = h('span', { class: 'mut' });
-  const prevB = h('button', { class: 'ghost', onclick: () => { F.page--; load(); } }, 'السابق');
-  const nextB = h('button', { class: 'ghost', onclick: () => { F.page++; load(); } }, 'التالى');
+  const prevB = h('button', { class: 'ghost', onclick: () => { F.page--; load(); } }, 'Previous');
+  const nextB = h('button', { class: 'ghost', onclick: () => { F.page++; load(); } }, 'Next');
   v.replaceChildren(h('div', { class: 'row' }, q, fs, fd), h('div', { style: 'height:12px' }), list, h('div', { class: 'pg' }, prevB, info, nextB));
 
   async function viewImg(fn, r, title) { try { modal(await adm(fn, { id: r.id }), r.name + ' - ' + title); } catch (e) { toast(errMsg(e)); } }
@@ -207,26 +224,26 @@ function ordersView() {
     const add = (t, fn, cls) => acts.append(h('button', { class: 'b ' + (cls || ''), onclick: fn }, t));
     const wa = t => { if (r.wa) acts.append(h('a', { class: 'b wa', href: r.wa, target: '_blank', rel: 'noopener' }, t)); };
     const act = (a, t, cls, openWa) => add(t, async ev => {
-      if (a === 'reject' && !confirm('رفض طلب ' + r.name + '؟')) return;
+      if (a === 'reject' && !confirm('Reject ' + r.name + "'s request?")) return;
       const btn = ev.currentTarget; btn.disabled = true;
       const w = openWa ? window.open('', '_blank') : null;   // لازم يتفتح فورا مع الضغطة عشان المتصفح ما يمنعوش
       try {
         const x = await adm('adminAct', { id: r.id, act: a });
-        if (x.msg) toast(x.msg, 6000);
+        if (x.msg) toast(tr(x.msg), 6000);
         if (w) { if (x.wa) w.location = x.wa; else w.close(); }
-        else if (openWa && x.wa) toast('المتصفح منع فتح واتساب.', 9000, x.wa);
+        else if (openWa && x.wa) toast('Browser blocked WhatsApp.', 9000, x.wa);
       } catch (e) { if (w) w.close(); toast(errMsg(e)); }
       load();
     }, cls);
-    if (r.hasId) add('البطاقة', () => viewImg('adminGetId', r, 'البطاقة'), 'ghost');
-    if (r.hasPay) add('الإيصال', () => viewImg('adminGetPay', r, 'إيصال التحويل'), 'ghost');
-    if (r.status === 'review') { act('approveId', 'قبول + واتساب', '', true); act('reject', 'رفض', 'red'); }
-    else if (r.status === 'pending') { wa('واتساب (رابط الدفع)'); act('approve', 'تأكيد الدفع + واتساب', '', true); act('reject', 'رفض', 'red'); }
-    else if (r.status === 'approved') { wa('واتساب (التذكرة)'); }
+    if (r.hasId) add('ID card', () => viewImg('adminGetId', r, 'ID card'), 'ghost');
+    if (r.hasPay) add('Receipt', () => viewImg('adminGetPay', r, 'Transfer receipt'), 'ghost');
+    if (r.status === 'review') { act('approveId', 'Approve + WhatsApp', '', true); act('reject', 'Reject', 'red'); }
+    else if (r.status === 'pending') { wa('WhatsApp (payment link)'); act('approve', 'Confirm payment + WhatsApp', '', true); act('reject', 'Reject', 'red'); }
+    else if (r.status === 'approved') { wa('WhatsApp (ticket)'); }
     return h('div', { class: 'item' },
       h('div', { style: 'display:flex;justify-content:space-between;gap:8px;align-items:center' }, h('span', { class: 'nm' }, r.name), h('span', { class: 'st st-' + r.status }, ST[r.status] || r.status)),
-      h('div', { class: 'mut' }, '#' + r.id + ' - يوم ' + r.day + (r.bus ? ' - باص' : ' - من غير باص') + ' - الإيصال: ' + (r.hasPay ? 'مرفوع' : (r.txref || 'لم يُرسل'))),
-      r.usedAt ? h('div', { class: 'ok' }, 'دخل: ' + new Date(r.usedAt).toLocaleString('ar-EG')) : null, acts);
+      h('div', { class: 'mut' }, '#' + r.id + ' - ' + dEn(r.day) + (r.bus ? ' - Bus' : ' - No bus') + ' - Receipt: ' + (r.hasPay ? 'Uploaded' : (r.txref || 'Not sent'))),
+      r.usedAt ? h('div', { class: 'ok' }, 'Checked in: ' + new Date(r.usedAt).toLocaleString('en-GB')) : null, acts);
   }
   async function load() {
     list.style.opacity = .5;
@@ -234,9 +251,9 @@ function ordersView() {
       const d = await adm('adminList', { filter: F.status, q: F.q, page: F.page, day: F.day });
       F.page = d.page;
       [...fs.options].forEach(o => { o.textContent = LBL[o.value] + ' (' + (d.counts[o.value] || 0) + ')'; });
-      info.textContent = 'صفحة ' + d.page + ' من ' + d.pages + ' (' + d.total + ' طلب)';
+      info.textContent = 'Page ' + d.page + ' of ' + d.pages + ' (' + d.total + ' requests)';
       prevB.disabled = d.page <= 1; nextB.disabled = d.page >= d.pages;
-      list.replaceChildren(...(d.rows.length ? d.rows.map(card) : [h('p', { class: 'mut' }, 'لا توجد نتائج')]));
+      list.replaceChildren(...(d.rows.length ? d.rows.map(card) : [h('p', { class: 'mut' }, 'No results')]));
     } catch (e) { toast(errMsg(e)); }
     list.style.opacity = 1;
   }
@@ -247,8 +264,8 @@ function ordersView() {
 function stopCam() { if (scanner) { try { scanner.stop(); } catch (e) {} scanner = null; } }
 function scanView() {
   const v = $('#view');
-  const res = h('div', { id: 'res', class: 'box wait' }, 'جاهز');
-  const day = h('select', { onchange: save }, h('option', { value: 'Friday' }, 'الجمعة'), h('option', { value: 'Saturday' }, 'السبت'));
+  const res = h('div', { id: 'res', class: 'box wait' }, 'Ready');
+  const day = h('select', { onchange: save }, h('option', { value: 'Friday' }, 'Friday'), h('option', { value: 'Saturday' }, 'Saturday'));
   day.value = S.day;
   const prev = h('input', { type: 'checkbox', style: 'width:auto', onchange: save }); prev.checked = S.prev;
   function save() { S.day = day.value; S.prev = prev.checked; ls.put('sd', S.day); ls.put('sp', S.prev ? '1' : '0'); }
@@ -260,25 +277,25 @@ function scanView() {
   }
   async function check(code) {
     if (busy) return; busy = true; save();
-    show('wait', '', 'جاري التحقق...');
+    show('wait', '', 'Checking...');
     try {
       const r = await api(Object.assign({ action: 'scan', code: code, day: S.day, preview: S.prev }, auth()), 20000);
-      show(r.ok ? 'good' : 'bad', r.ok ? '✔ مسموح' : '✖ مرفوض', r.msg || '');
-    } catch (e) { show('bad', '✖', 'تعذر الاتصال. شوف النت وجرّب تانى (ماتفترضش إن الكود اتسجل).'); }
+      show(r.ok ? 'good' : 'bad', r.ok ? '✔ ALLOWED' : '✖ DENIED', tr(r.msg));
+    } catch (e) { show('bad', '✖', 'Connection failed. Check the internet and try again (do not assume the code was recorded).'); }
     busy = false;
   }
   async function enterById(id) {
     if (busy) return; busy = true; save();
-    show('wait', '', 'جاري التسجيل...');
+    show('wait', '', 'Recording...');
     try {
       const r = await api(Object.assign({ action: 'enter', id: id, day: S.day, preview: S.prev }, auth()), 20000);
-      show(r.ok ? 'good' : 'bad', r.ok ? '✔ مسموح' : '✖ مرفوض', r.msg || '');
+      show(r.ok ? 'good' : 'bad', r.ok ? '✔ ALLOWED' : '✖ DENIED', tr(r.msg));
       if (r.ok) { found.replaceChildren(); q.value = ''; }
-    } catch (e) { show('bad', '✖', 'تعذر الاتصال. شوف النت وجرّب تانى (ماتفترضش إن الدخول اتسجل).'); }
+    } catch (e) { show('bad', '✖', 'Connection failed. Check the internet and try again (do not assume the entry was recorded).'); }
     busy = false;
   }
   const camBtn = h('button', { onclick: async () => {
-    if (scanner) { stopCam(); $('#reader').innerHTML = ''; camBtn.textContent = 'تشغيل الكاميرا لمسح التالى'; return; }
+    if (scanner) { stopCam(); $('#reader').innerHTML = ''; camBtn.textContent = 'Start camera to scan next'; return; }
     try {
       scanner = new Html5Qrcode('reader'); let last = '', lastAt = 0;
       await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, text => {
@@ -286,34 +303,34 @@ function scanView() {
         if (busy || (text === last && now - lastAt < 4000)) return;   // يتجاهل نفس الكود لو اتمسح تانى بسرعة
         last = text; lastAt = now; check(tokenOf(text));
       }, () => {});
-      camBtn.textContent = 'إيقاف الكاميرا';
-    } catch (e) { scanner = null; show('bad', '✖', 'الكاميرا ماشتغلتش. اسمح للمتصفح بالكاميرا.'); }
-  } }, 'تشغيل الكاميرا لمسح التالى');
-  const q = h('input', { placeholder: 'رقم الموبايل (4 أرقام على الأقل) أو الاسم', autocomplete: 'off', onkeydown: e => { if (e.key === 'Enter') find(); } });
+      camBtn.textContent = 'Stop camera';
+    } catch (e) { scanner = null; show('bad', '✖', 'Camera failed. Allow camera access in the browser.'); }
+  } }, 'Start camera to scan next');
+  const q = h('input', { placeholder: 'Phone (at least 4 digits) or name', autocomplete: 'off', onkeydown: e => { if (e.key === 'Enter') find(); } });
   const found = h('div', {});
   async function find() {
     const t = q.value.trim(); save();
-    if (t.length < 3) return show('bad', '✖', 'اكتب 4 أرقام على الأقل من الموبايل، أو 3 حروف من الاسم');
-    found.textContent = 'جاري البحث...';
+    if (t.length < 3) return show('bad', '✖', 'Enter at least 4 phone digits, or 3 letters of the name');
+    found.textContent = 'Searching...';
     try {
       const r = await api(Object.assign({ action: 'find', query: t }, auth()));
       found.replaceChildren();
-      if (!r.ok) { found.textContent = r.msg || 'حصل خطأ'; return; }
-      if (!r.list.length) { found.textContent = 'مفيش تذكرة مؤكدة بالبيانات دى'; return; }
+      if (!r.ok) { found.textContent = tr(r.msg) || 'An error occurred'; return; }
+      if (!r.list.length) { found.textContent = 'No confirmed ticket matches'; return; }
       r.list.forEach(x => {
-        const it = h('div', { class: 'found' }, h('b', {}, x.name), h('div', { class: 'mut' }, 'يوم ' + x.dayLabel + ' - الموبايل ينتهى بـ ' + x.phoneEnd));
-        if (x.used) it.append(h('div', { class: 'err' }, 'دخل قبل كده (' + new Date(x.usedAt).toLocaleTimeString('ar-EG') + ')'));
-        else if (x.day !== S.day) it.append(h('div', { class: 'err' }, 'تذكرته ليوم ' + x.dayLabel));
-        else it.append(h('button', { onclick: () => enterById(x.id) }, 'تسجيل دخول'));
+        const it = h('div', { class: 'found' }, h('b', {}, x.name), h('div', { class: 'mut' }, dEn(x.dayLabel) + ' - phone ends with ' + x.phoneEnd));
+        if (x.used) it.append(h('div', { class: 'err' }, 'Already checked in (' + new Date(x.usedAt).toLocaleTimeString('en-GB') + ')'));
+        else if (x.day !== S.day) it.append(h('div', { class: 'err' }, 'Ticket is for ' + dEn(x.dayLabel)));
+        else it.append(h('button', { onclick: () => enterById(x.id) }, 'Check in'));
         found.append(it);
       });
-    } catch (e) { found.textContent = 'تعذر الاتصال. شوف النت وجرّب تانى.'; }
+    } catch (e) { found.textContent = 'Connection failed. Check the internet and try again.'; }
   }
   v.replaceChildren(res,
-    h('div', { class: 'box' }, h('div', { class: 'row' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'اليوم'), day)), camBtn, h('div', { id: 'reader' }),
-      h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal' }, prev, 'وضع المعاينة (من غير تسجيل دخول)')),
-    h('div', { class: 'box' }, h('label', { style: 'margin-top:0' }, 'لو الكود مش شغال: دوّر بالموبايل أو الاسم'), q, h('button', { class: 'alt', onclick: find }, 'بحث'), found,
-      h('p', { class: 'mut', style: 'font-size:.85rem;margin-bottom:0' }, 'قارن الاسم بالبطاقة الشخصية قبل ما تسجّل الدخول.')));
+    h('div', { class: 'box' }, h('div', { class: 'row' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day)), camBtn, h('div', { id: 'reader' }),
+      h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal' }, prev, 'Preview mode (do not record entry)')),
+    h('div', { class: 'box' }, h('label', { style: 'margin-top:0' }, "If the code doesn't work: search by phone or name"), q, h('button', { class: 'alt', onclick: find }, 'Search'), found,
+      h('p', { class: 'mut', style: 'font-size:.85rem;margin-bottom:0' }, "Compare the name with the person's ID before checking in.")));
   // لو الصفحة اتفتحت من QR بكاميرا الموبايل العادية (?s=التوكن)
   if (S.urlToken) { const t = S.urlToken; S.urlToken = ''; history.replaceState(null, '', location.pathname); check(t); }
 }
@@ -323,11 +340,11 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catc
 (async () => {
   const role = ls.get('role'), cred = ls.get('cred');
   if (role && cred) {
-    $('#app').replaceChildren(h('p', { class: 'mut', style: 'text-align:center;margin-top:40vh' }, 'جاري الدخول...'));
+    $('#app').replaceChildren(h('p', { class: 'mut', style: 'text-align:center;margin-top:40vh' }, 'Signing in...'));
     try { await login(role, cred); return; } catch (e) {
-      loginView(/(الباسورد|مفتاح)/.test(errMsg(e)) ? errMsg(e) : 'تعذر الاتصال. شوف النت وجرّب تانى.'); return;
+      loginView(/(password|key)/i.test(errMsg(e)) ? errMsg(e) : 'Connection failed. Check the internet and try again.'); return;
     }
   }
-  loginView(S.urlToken ? 'سجّل الدخول (مفتاح الـ scanner) وهيتم فحص الكود تلقائى' : '');
+  loginView(S.urlToken ? 'Sign in with the scanner key and the code will be checked automatically' : '');
 })();
 </script></body></html>
