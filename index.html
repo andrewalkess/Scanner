@@ -36,6 +36,15 @@ label{display:block;margin:10px 0 4px;font-weight:bold}
 .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .b{width:auto;flex:1;min-width:110px;margin:0;padding:9px 10px;font-size:.88rem;text-align:center;text-decoration:none;border-radius:9px;background:var(--g);color:#fff;font-weight:bold;border:0}
 .b.ghost{background:#e8e6e1;color:var(--tx)}.b.red{background:#8a2b2b}.b.wa{background:#25d366}
+.tw{overflow-x:auto;background:#fff;border-radius:14px;box-shadow:0 1px 4px #0001}
+.tbl{width:100%;border-collapse:collapse;font-size:.88rem}
+.tbl th{background:var(--g);color:#fff;text-align:left;padding:10px 12px;white-space:nowrap;font-weight:600}
+.tbl td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:middle;text-align:left}
+.tbl tbody tr:nth-child(even) td{background:#faf8f3}.tbl tbody tr:hover td{background:#f0ede5}
+.tbl td.actd{min-width:300px}
+.tbl .st{white-space:nowrap}
+.tbl .acts{margin:0;gap:4px;justify-content:flex-start}
+.tbl .b{flex:none;min-width:0;padding:6px 10px;font-size:.78rem;border-radius:7px}
 .pg{display:flex;align-items:center;gap:10px;justify-content:center;margin:14px 0}.pg button{width:auto;margin:0;padding:9px 18px}
 .big{font-size:2.6rem;font-weight:900;line-height:1.1}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:10px}
@@ -171,6 +180,7 @@ function go(tab, force) {
   S.tab = tab;
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.id === 'n-' + tab));
   window.scrollTo(0, 0);
+  $('#app').style.maxWidth = tab === 'orders' ? '1500px' : '1100px';
   ({ home: homeView, orders: ordersView, scan: scanView })[tab]();
 }
 
@@ -214,10 +224,11 @@ function ordersView() {
   fs.value = F.status;
   const fd = h('select', { onchange: () => { F.day = fd.value; F.page = 1; load(); } }, opt('', 'All days'), opt('Friday', 'Friday'), opt('Saturday', 'Saturday'));
   fd.value = F.day;
-  const list = h('div', { class: 'grid' }), info = h('span', { class: 'mut' });
+  const list = h('tbody', {}), info = h('span', { class: 'mut' });
+  const table = h('table', { class: 'tbl' }, h('thead', {}, h('tr', {}, ...['#', 'Name', 'Day', 'Bus', 'Group', 'Receipt', 'Status', 'Actions'].map(x => h('th', {}, x)))), list);
   const prevB = h('button', { class: 'ghost', onclick: () => { F.page--; load(); } }, 'Previous');
   const nextB = h('button', { class: 'ghost', onclick: () => { F.page++; load(); } }, 'Next');
-  v.replaceChildren(h('div', { class: 'row' }, q, fs, fd), h('div', { style: 'height:12px' }), list, h('div', { class: 'pg' }, prevB, info, nextB));
+  v.replaceChildren(h('div', { class: 'row' }, q, fs, fd), h('div', { style: 'height:12px' }), h('div', { class: 'tw' }, table), h('div', { class: 'pg' }, prevB, info, nextB));
 
   async function viewImg(fn, r, title) { try { modal(await adm(fn, { id: r.id }), r.name + ' - ' + title); } catch (e) { toast(errMsg(e)); } }
   function card(r) {
@@ -254,10 +265,12 @@ function ordersView() {
     if (r.status === 'review') { act('approveId', 'Approve + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gr > 1) actGroup('approveId', 'Approve all ' + r.gr + ' cards in group', 'ghost'); }
     else if (r.status === 'pending') { wa('WhatsApp (payment link)'); act('approve', 'Confirm payment + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gp > 1) actGroup('approve', 'Confirm payment for all ' + r.gp + ' in group', 'ghost'); }
     else if (r.status === 'approved') { wa('WhatsApp (ticket)'); }
-    return h('div', { class: 'item' },
-      h('div', { style: 'display:flex;justify-content:space-between;gap:8px;align-items:center' }, h('span', { class: 'nm' }, r.name, r.gid ? h('span', { class: 'chip', style: 'font-size:.75rem;margin-right:8px;padding:2px 10px' }, 'Group of ' + r.gn) : null), h('span', { class: 'st st-' + r.status }, ST[r.status] || r.status)),
-      h('div', { class: 'mut' }, '#' + r.id + ' - ' + dEn(r.day) + (r.bus ? ' - Bus' : ' - No bus') + ' - Receipt: ' + (r.hasPay ? 'Uploaded' : (r.txref || 'Not sent'))),
-      r.usedAt ? h('div', { class: 'ok' }, 'Checked in: ' + new Date(r.usedAt).toLocaleString('en-GB')) : null, acts);
+    return h('tr', {}, h('td', { class: 'mut' }, String(r.id)), h('td', {}, h('b', {}, r.name)), h('td', {}, dEn(r.day)),
+      h('td', {}, r.bus ? 'Bus' : '-'), h('td', {}, r.gid ? 'Group of ' + r.gn : '-'),
+      h('td', {}, r.hasPay ? 'Uploaded' : (r.txref || '-')),
+      h('td', {}, h('span', { class: 'st st-' + r.status }, ST[r.status] || r.status),
+        r.usedAt ? h('div', { class: 'ok', style: 'font-size:.8rem' }, 'In: ' + new Date(r.usedAt).toLocaleString('en-GB')) : null),
+      h('td', { class: 'actd' }, acts));
   }
   async function load() {
     list.style.opacity = .5;
@@ -267,7 +280,7 @@ function ordersView() {
       [...fs.options].forEach(o => { o.textContent = LBL[o.value] + ' (' + (d.counts[o.value] || 0) + ')'; });
       info.textContent = 'Page ' + d.page + ' of ' + d.pages + ' (' + d.total + ' requests)';
       prevB.disabled = d.page <= 1; nextB.disabled = d.page >= d.pages;
-      list.replaceChildren(...(d.rows.length ? d.rows.map(card) : [h('p', { class: 'mut' }, 'No results')]));
+      list.replaceChildren(...(d.rows.length ? d.rows.map(card) : [h('tr', {}, h('td', { colspan: '8', class: 'mut' }, 'No results'))]));
     } catch (e) { toast(errMsg(e)); }
     list.style.opacity = 1;
   }
