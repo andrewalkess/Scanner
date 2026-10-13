@@ -1,17 +1,27 @@
 {
-  "name": "Together 11 - الإدارة",
+  "name": "Together 11 - Admin",
   "short_name": "Together 11",
-  "description": "لوحة التحكم والسكانر لفريق الايفنت",
+  "description": "Admin dashboard and QR scanner for the event team",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "dir": "rtl",
-  "lang": "ar",
+  "dir": "ltr",
+  "lang": "en",
   "background_color": "#1f4d3a",
   "theme_color": "#1f4d3a",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
