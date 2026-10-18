@@ -45,6 +45,10 @@ label{display:block;margin:10px 0 4px;font-weight:bold}
 .tbl .st{white-space:nowrap}
 .tbl .acts{margin:0;gap:4px;justify-content:flex-start}
 .tbl .b{flex:none;min-width:0;padding:6px 10px;font-size:.78rem;border-radius:7px}
+.busgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.busbtn{margin:0;padding:10px 4px;background:#e8e6e1;color:var(--tx);font-size:.95rem;line-height:1.3}
+.busbtn small{display:block;font-weight:normal;color:var(--mut)}
+.busbtn.on{background:var(--g);color:#fff}.busbtn.on small{color:#d8e8df}.busbtn.full{outline:2px solid #c0392b}
 .pg{display:flex;align-items:center;gap:10px;justify-content:center;margin:14px 0}.pg button{width:auto;margin:0;padding:9px 18px}
 .big{font-size:2.6rem;font-weight:900;line-height:1.1}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:10px}
@@ -53,7 +57,7 @@ label{display:block;margin:10px 0 4px;font-weight:bold}
 .bar{height:12px;background:#e6e3dc;border-radius:99px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--g2);border-radius:99px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}.chip{background:#fff;border-radius:999px;padding:6px 14px;box-shadow:0 1px 3px #0001;font-weight:bold}
 #res{text-align:center;font-size:1.1rem;transition:background .2s}#res .big{font-size:2.4rem}
-.good{background:#d9f3e1;color:#176b35}.bad{background:#fbe0e0;color:#a11}.wait{background:#fff;color:#555}
+.warn{background:#fff3cd;color:#8a6d00}.good{background:#d9f3e1;color:#176b35}.bad{background:#fbe0e0;color:#a11}.wait{background:#fff;color:#555}
 #reader{width:100%;margin-top:10px;border-radius:12px;overflow:hidden}
 .found{background:#faf8f3;border:1px solid #e3ded3;border-radius:10px;padding:10px 12px;margin-top:8px}
 .ov{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;z-index:20;padding:10px}
@@ -86,10 +90,18 @@ const MSG = [
   [/^غير موجود$/, 'Not found'], [/^التذكرة مستخدمة$/, 'Ticket already used'], [/^الطلب مش فى المرحلة دى$/, 'Request is not at this stage'],
   [/^اليوم اكتمل العدد$/, 'This day is full'], [/^لا توجد صورة$/, 'No image'], [/^لا توجد صورة تحويل$/, 'No transfer receipt'], [/^مفيش إيميل لإعادة إرساله$/, 'Nothing to resend'],
   [/^الكود ليوم (.+)$/, m => 'Code is for ' + dEn(m[1])], [/^التذكرة ليوم (.+)$/, m => 'Ticket is for ' + dEn(m[1])],
+  [/^الكود مستخدم قبل كده: (.*) \((.*)\)$/, m => 'Code already used - entered: ' + m[1] + ' (' + latin(m[2]) + ')'],
   [/^الكود مستخدم قبل كده \((.*)\)$/, m => 'Code already used (' + latin(m[1]) + ')'], [/^دخل قبل كده \((.*)\)$/, m => 'Already checked in (' + latin(m[1]) + ')'],
   [/^مسموح بالدخول: (.*)$/, m => 'Entry allowed: ' + m[1]], [/^صالح \(معاينة، لم يُسجَّل الدخول\): (.*)$/, m => 'Valid (preview, entry not recorded): ' + m[1]],
   [/^تم التأكيد لكن الإيميل لم يُرسل \((.*?)\)\./, m => 'Confirmed, but the email was not sent (' + m[1] + '). Use the WhatsApp button or Resend later.'],
   [/^انتهى حد الإيميلات اليومى$/, 'Daily email limit reached'],
+  [/^ركب الباص (\d+) \((\d+\/\d+)\): (.*)$/, m => 'Boarded bus ' + m[1] + ' (' + m[2] + '): ' + m[3]],
+  [/^صالح للباص \(معاينة، لم يُسجَّل\): (.*)$/, m => 'Valid for the bus (preview, not recorded): ' + m[1]],
+  [/^مش مسجل باص: (.*)$/, m => 'Not registered for the bus: ' + m[1]],
+  [/^تنبيه: ركب قبل كده فى الباص (\d+) \((.*)\)$/, m => 'Warning: already boarded bus ' + m[1] + ' (' + latin(m[2]) + ')'],
+  [/^ركب قبل كده فى الباص (\d+) \((.*)\)$/, m => 'Already boarded bus ' + m[1] + ' (' + latin(m[2]) + ')'],
+  [/^الباص (\d+) اتملى \((\d+\/\d+)\)$/, m => 'Bus ' + m[1] + ' is full (' + m[2] + ')'],
+  [/^اختار رقم الباص$/, 'Choose a bus number'], [/^اتجاه غير صحيح$/, 'Invalid direction'],
   [/^مفيش أعضاء فى المرحلة دى$/, 'No group members at this stage'],
 ];
 function tr(m) { m = String(m == null ? '' : m); for (const [re, f] of MSG) { const x = m.match(re); if (x) return typeof f === 'function' ? f(x) : f; } return m; }
@@ -123,7 +135,7 @@ function beep(ok) {
   try {
     const A = window.AudioContext || window.webkitAudioContext; if (!A) return;
     const c = beep.c || (beep.c = new A()), t = c.currentTime;
-    (ok ? [[880, 0, .12]] : [[220, 0, .15], [220, .22, .15]]).forEach(([f, s, d]) => {
+    (ok === 'warn' ? [[660, 0, .1], [660, .16, .1]] : ok ? [[880, 0, .12]] : [[220, 0, .15], [220, .22, .15]]).forEach(([f, s, d]) => {
       const o = c.createOscillator(), g = c.createGain(); o.frequency.value = f; o.type = 'square'; g.gain.value = .08;
       o.connect(g); g.connect(c.destination); o.start(t + s); o.stop(t + s + d);
     });
@@ -167,7 +179,7 @@ function logout() { ls.del('cred'); S.role = ''; S.cred = ''; stopCam(); clearIn
 
 // ---------- الهيكل ----------
 function start() {
-  const tabs = S.role === 'admin' ? [['home', '📊', 'Dashboard'], ['orders', '📋', 'Orders'], ['scan', '📷', 'Scanner']] : [['scan', '📷', 'Scanner']];
+  const tabs = S.role === 'admin' ? [['home', '📊', 'Dashboard'], ['orders', '📋', 'Orders'], ['scan', '📷', 'Gate'], ['bus', '🚌', 'Bus']] : [['scan', '📷', 'Gate'], ['bus', '🚌', 'Bus']];
   const nav = h('nav', {}, ...tabs.map(t => h('button', { id: 'n-' + t[0], onclick: () => go(t[0]) }, h('b', {}, t[1]), t[2])));
   const hd = h('header', {}, h('h1', {}, EVENT), h('button', { onclick: () => go(S.tab, true) }, 'Refresh'), h('button', { onclick: logout }, 'Log out'));
   $('#app').replaceChildren(hd, h('div', { id: 'view' }), nav);
@@ -181,7 +193,7 @@ function go(tab, force) {
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.id === 'n-' + tab));
   window.scrollTo(0, 0);
   $('#app').style.maxWidth = tab === 'orders' ? '1500px' : '1100px';
-  ({ home: homeView, orders: ordersView, scan: scanView })[tab]();
+  ({ home: homeView, orders: ordersView, scan: scanView, bus: busView })[tab]();
 }
 
 // ---------- الرئيسية (إحصائيات حية) ----------
@@ -204,9 +216,12 @@ function homeView() {
       });
       const st = d.status, L = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected' };
       const chips = h('div', { class: 'chips' }, ...Object.keys(L).map(k => h('span', { class: 'chip' }, h('span', { class: 'st st-' + k, style: 'margin-left:6px' }, L[k]), String(st[k] || 0))), h('span', { class: 'chip' }, 'All requests: ' + d.total));
+      const rp = d.repeats || [];
+      const repeats = h('div', { class: 'box' }, h('h3', { style: 'margin:0 0 6px' }, 'Repeated QR scans at the gate'),
+        ...rp.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + dEn(r.day) + ' - entered ' + fmtTime(r.first) + ', scanned again ' + fmtTime(r.at)))));
       const recent = h('div', { class: 'box' }, h('h3', { style: 'margin:0 0 6px' }, 'Latest check-ins'),
         ...(d.recent.length ? d.recent.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + dEn(r.day) + ' - ' + fmtTime(r.at)))) : [h('p', { class: 'mut' }, 'No one has checked in yet')]));
-      v.replaceChildren(...days, h('div', { class: 'box' }, chips), recent, h('p', { class: 'mut', style: 'text-align:center;font-size:.8rem' }, 'Auto-refreshes every 15 s - last update ' + fmtTime(Date.now())));
+      v.replaceChildren(...days, h('div', { class: 'box' }, chips), recent, ...(rp.length ? [repeats] : []), h('p', { class: 'mut', style: 'text-align:center;font-size:.8rem' }, 'Auto-refreshes every 15 s - last update ' + fmtTime(Date.now())));
     } catch (e) { v.replaceChildren(h('p', { class: 'err' }, errMsg(e))); }
   };
   load(); timer = setInterval(load, 15000);
@@ -266,7 +281,7 @@ function ordersView() {
     else if (r.status === 'pending') { wa('WhatsApp (payment link)'); act('approve', 'Confirm payment + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gp > 1) actGroup('approve', 'Confirm payment for all ' + r.gp + ' in group', 'ghost'); }
     else if (r.status === 'approved') { wa('WhatsApp (ticket)'); }
     return h('tr', {}, h('td', { class: 'mut' }, String(r.id)), h('td', {}, h('b', {}, r.name)), h('td', {}, dEn(r.day)),
-      h('td', {}, r.bus ? 'Bus' : '-'), h('td', {}, r.gid ? 'Group of ' + r.gn : '-'),
+      h('td', {}, r.bus ? 'Bus' : '-'), h('td', {}, r.gid ? h('b', {}, r.gname || 'Group') : '-', r.gid ? h('div', { class: 'mut', style: 'font-size:.75rem' }, r.gn + ' people') : null),
       h('td', {}, r.hasPay ? 'Uploaded' : (r.txref || '-')),
       h('td', {}, h('span', { class: 'st st-' + r.status }, ST[r.status] || r.status),
         r.usedAt ? h('div', { class: 'ok', style: 'font-size:.8rem' }, 'In: ' + new Date(r.usedAt).toLocaleString('en-GB')) : null),
@@ -360,6 +375,106 @@ function scanView() {
       h('p', { class: 'mut', style: 'font-size:.85rem;margin-bottom:0' }, "Compare the name with the person's ID before checking in.")));
   // لو الصفحة اتفتحت من QR بكاميرا الموبايل العادية (?s=التوكن)
   if (S.urlToken) { const t = S.urlToken; S.urlToken = ''; history.replaceState(null, '', location.pathname); check(t); }
+}
+
+
+// ---------- الباصات: تسجيل الركوب (ذهاب وعودة) ----------
+function busView() {
+  const v = $('#view');
+  const st = { day: ls.get('bd') || 'Friday', dir: ls.get('bdir') || 'out', no: Number(ls.get('bn')) || 1, prev: ls.get('bp') === '1' };
+  let stats = null;
+  const res = h('div', { id: 'res', class: 'box wait' }, 'Ready');
+  const day = h('select', { onchange: changed }, h('option', { value: 'Friday' }, 'Friday'), h('option', { value: 'Saturday' }, 'Saturday'));
+  const dir = h('select', { onchange: changed }, h('option', { value: 'out' }, 'Outbound trip'), h('option', { value: 'back' }, 'Return trip'));
+  const prev = h('input', { type: 'checkbox', style: 'width:auto', onchange: save }); prev.checked = st.prev;
+  day.value = st.day; dir.value = st.dir;
+  const grid = h('div', { class: 'busgrid' }), summary = h('div', { class: 'mut', style: 'margin-top:10px' });
+  const missingBox = h('div', {});
+  function save() { st.day = day.value; st.dir = dir.value; st.prev = prev.checked; ls.put('bd', st.day); ls.put('bdir', st.dir); ls.put('bn', String(st.no)); ls.put('bp', st.prev ? '1' : '0'); }
+  function changed() { save(); missingBox.replaceChildren(); refresh(); }
+  function draw() {
+    const n = stats ? stats.buses : 6, cap = stats ? stats.cap : 50;
+    grid.replaceChildren(...Array.from({ length: n }, (_, i) => {
+      const c = stats ? stats.counts[i] : 0;
+      return h('button', { class: 'busbtn' + (st.no === i + 1 ? ' on' : '') + (c >= cap ? ' full' : ''), onclick: () => { st.no = i + 1; save(); draw(); } },
+        'Bus ' + (i + 1), h('small', {}, c + ' / ' + cap));
+    }));
+    summary.textContent = stats ? 'Boarded: ' + stats.boarded + ' of ' + stats.expected + ' riders - not yet: ' + Math.max(0, stats.expected - stats.boarded) : '';
+  }
+  async function refresh() {
+    try { const r = await api(Object.assign({ action: 'busStats', day: st.day, dir: st.dir }, auth())); if (r.ok) { stats = r.data; draw(); } } catch (e) {}
+  }
+  function show(cls, big, msg) {
+    res.className = 'box ' + cls; res.replaceChildren();
+    if (big) res.append(h('div', { class: 'big' }, big));
+    res.append(h('div', {}, msg));
+    if (cls === 'good' || cls === 'bad' || cls === 'warn') { beep(cls === 'warn' ? 'warn' : cls === 'good'); if (navigator.vibrate) navigator.vibrate(cls === 'good' ? 80 : cls === 'warn' ? [60, 40, 60] : [120, 60, 120]); }
+  }
+  async function call(body, offline) {
+    if (busy) return; busy = true; save();
+    show('wait', '', 'Checking...');
+    try {
+      const r = await api(Object.assign(body, { day: st.day, dir: st.dir, bus: st.no, preview: st.prev }, auth()), 20000);
+      show(r.warn ? 'warn' : r.ok ? 'good' : 'bad', r.warn ? '⚠ ALREADY BOARDED' : r.ok ? '✔ BOARDED' : '✖ DENIED', tr(r.msg));
+      if (r.ok && !st.prev) { found.replaceChildren(); q.value = ''; }
+      refresh();
+    } catch (e) { show('bad', '✖', offline); }
+    busy = false;
+  }
+  const check = code => call({ action: 'busScan', code: code }, 'Connection failed. Check the internet and try again (do not assume the boarding was recorded).');
+  const camBtn = h('button', { onclick: async () => {
+    if (scanner) { stopCam(); $('#reader').innerHTML = ''; camBtn.textContent = 'Start camera to scan next'; return; }
+    try {
+      scanner = new Html5Qrcode('reader'); let last = '', lastAt = 0;
+      await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, text => {
+        const now = Date.now();
+        if (busy || (text === last && now - lastAt < 4000)) return;
+        last = text; lastAt = now; check(tokenOf(text));
+      }, () => {});
+      camBtn.textContent = 'Stop camera';
+    } catch (e) { scanner = null; show('bad', '✖', 'Camera failed. Allow camera access in the browser.'); }
+  } }, 'Start camera to scan next');
+  const q = h('input', { placeholder: 'Phone (at least 4 digits) or name', autocomplete: 'off', onkeydown: e => { if (e.key === 'Enter') find(); } });
+  const found = h('div', {});
+  async function find() {
+    const t = q.value.trim();
+    if (t.length < 3) return show('bad', '✖', 'Enter at least 4 phone digits, or 3 letters of the name');
+    found.textContent = 'Searching...';
+    try {
+      const r = await api(Object.assign({ action: 'find', query: t }, auth()));
+      found.replaceChildren();
+      if (!r.ok) { found.textContent = tr(r.msg) || 'An error occurred'; return; }
+      if (!r.list.length) { found.textContent = 'No confirmed ticket matches'; return; }
+      r.list.forEach(x => {
+        const it = h('div', { class: 'found' }, h('b', {}, x.name), h('div', { class: 'mut' }, dEn(x.dayLabel) + ' - ' + (x.bus ? 'Bus rider' : 'No bus') + ' - phone ends with ' + x.phoneEnd));
+        if (!x.bus) it.append(h('div', { class: 'err' }, 'Not registered for the bus'));
+        else if (x.day !== st.day) it.append(h('div', { class: 'err' }, 'Ticket is for ' + dEn(x.dayLabel)));
+        else it.append(h('button', { onclick: () => call({ action: 'busEnter', id: x.id }, 'Connection failed. Check the internet and try again (do not assume the boarding was recorded).') }, 'Board bus ' + st.no));
+        found.append(it);
+      });
+    } catch (e) { found.textContent = 'Connection failed. Check the internet and try again.'; }
+  }
+  const missBtn = h('button', { class: 'alt', onclick: async () => {
+    missBtn.disabled = true; missingBox.textContent = 'Loading...';
+    try {
+      const d = await adm('adminBusReport', { day: st.day, dir: st.dir });
+      const tel = m => h('a', { class: 'b', href: 'tel:' + String(m.phone).replace(/\s/g, ''), style: 'padding:5px 10px;margin:0 4px 0 0' }, 'Call');
+      const wa = m => m.wa ? h('a', { class: 'b wa', href: 'https://wa.me/' + m.wa, target: '_blank', rel: 'noopener', style: 'padding:5px 10px;margin:0' }, 'WhatsApp') : null;
+      missingBox.replaceChildren(h('p', { class: 'mut' }, d.missing.length + ' not boarded yet (of ' + d.expected + ')'),
+        h('div', { class: 'tw', style: 'max-height:420px;overflow:auto' }, h('table', { class: 'tbl' },
+          h('thead', {}, h('tr', {}, ...['#', 'Name', 'Phone', 'Group', ''].map(x => h('th', {}, x)))),
+          h('tbody', {}, ...d.missing.map(m => h('tr', {}, h('td', { class: 'mut' }, String(m.id)), h('td', {}, h('b', {}, m.name)),
+            h('td', { style: 'direction:ltr;white-space:nowrap' }, m.phone), h('td', {}, m.group || '-'), h('td', { style: 'white-space:nowrap' }, tel(m), wa(m))))))));
+    } catch (e) { missingBox.textContent = errMsg(e); }
+    missBtn.disabled = false;
+  } }, "Who hasn't boarded yet?");
+  v.replaceChildren(res,
+    h('div', { class: 'box' }, h('div', { class: 'row' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day), h('div', {}, h('label', { style: 'margin-top:0' }, 'Trip'), dir)),
+      grid, summary, camBtn, h('div', { id: 'reader' }),
+      h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal' }, prev, 'Preview mode (do not record boarding)')),
+    h('div', { class: 'box' }, h('label', { style: 'margin-top:0' }, "If the code doesn't work: search by phone or name"), q, h('button', { class: 'alt', onclick: find }, 'Search'), found),
+    ...(S.role === 'admin' ? [h('div', { class: 'box' }, missBtn, missingBox)] : []));
+  draw(); refresh();
 }
 
 // ---------- التشغيل ----------
