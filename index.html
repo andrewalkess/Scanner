@@ -1,492 +1,580 @@
-<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#1f4d3a">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<title>Together 11 - Admin</title>
-<style>
-:root{--g:#1f4d3a;--g2:#2e6b52;--bg:#f5f3ef;--tx:#1d2433;--mut:#667;--card:#fff;--y:#ffd54f}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%}
-body{font-family:"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
-#app{max-width:1100px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
-header{background:var(--g);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
-header h1{font-size:1.15rem;margin:0;flex:1}
-header button{width:auto;margin:0;background:#ffffff26;padding:7px 12px;font-size:.85rem}
-#view{flex:1;padding:14px 14px calc(86px + env(safe-area-inset-bottom))}
-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:6}
-nav button{flex:1;max-width:260px;background:none;color:var(--mut);border:0;border-radius:0;margin:0;padding:10px 4px;font-size:.85rem;font-weight:bold}
-nav button b{display:block;font-size:1.35rem;line-height:1.2}
-nav button.on{color:var(--g)}
-nav button.on b{transform:scale(1.1)}
-input,select,button{width:100%;padding:12px;font-size:1rem;border:1px solid #bbb;border-radius:10px;font-family:inherit;background:#fff;color:inherit}
-button{background:var(--g);color:#fff;border:0;cursor:pointer;margin-top:10px;font-weight:bold}
-button.alt{background:#555}button.red{background:#8a2b2b}button.ghost{background:#e8e6e1;color:var(--tx)}button:disabled{opacity:.5}
-label{display:block;margin:10px 0 4px;font-weight:bold}
-.box{background:var(--card);border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 1px 4px #0001}
-.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:130px;margin-top:0}
-.seg{display:flex;gap:8px}.seg button{margin:0;background:#e8e6e1;color:var(--tx)}.seg button.on{background:var(--g);color:#fff}
-.err{color:#a11;font-weight:bold}.ok{color:#176b35;font-weight:bold}.mut{color:var(--mut)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
-.item{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 4px #0001}
-.item .nm{font-size:1.1rem;font-weight:bold}
-.st{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:bold;font-size:.8rem}
-.st-review{background:#FFA726}.st-pending{background:#FFF176}.st-approved{background:#81C784}.st-rejected{background:#E57373}
-.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.b{width:auto;flex:1;min-width:110px;margin:0;padding:9px 10px;font-size:.88rem;text-align:center;text-decoration:none;border-radius:9px;background:var(--g);color:#fff;font-weight:bold;border:0}
-.b.ghost{background:#e8e6e1;color:var(--tx)}.b.red{background:#8a2b2b}.b.wa{background:#25d366}
-.tw{overflow-x:auto;background:#fff;border-radius:14px;box-shadow:0 1px 4px #0001}
-.tbl{width:100%;border-collapse:collapse;font-size:.88rem}
-.tbl th{background:var(--g);color:#fff;text-align:left;padding:10px 12px;white-space:nowrap;font-weight:600}
-.tbl td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:middle;text-align:left}
-.tbl tbody tr:nth-child(even) td{background:#faf8f3}.tbl tbody tr:hover td{background:#f0ede5}
-.tbl td.actd{min-width:300px}
-.tbl .st{white-space:nowrap}
-.tbl .acts{margin:0;gap:4px;justify-content:flex-start}
-.tbl .b{flex:none;min-width:0;padding:6px 10px;font-size:.78rem;border-radius:7px}
-.busgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-.busbtn{margin:0;padding:10px 4px;background:#e8e6e1;color:var(--tx);font-size:.95rem;line-height:1.3}
-.busbtn small{display:block;font-weight:normal;color:var(--mut)}
-.busbtn.on{background:var(--g);color:#fff}.busbtn.on small{color:#d8e8df}.busbtn.full{outline:2px solid #c0392b}
-.pg{display:flex;align-items:center;gap:10px;justify-content:center;margin:14px 0}.pg button{width:auto;margin:0;padding:9px 18px}
-.big{font-size:2.6rem;font-weight:900;line-height:1.1}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:10px}
-.kpi{background:#fff;border-radius:14px;padding:14px;text-align:center;box-shadow:0 1px 4px #0001}
-.kpi small{color:var(--mut);display:block}
-.bar{height:12px;background:#e6e3dc;border-radius:99px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--g2);border-radius:99px}
-.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{background:#fff;border-radius:999px;padding:6px 14px;box-shadow:0 1px 3px #0001;font-weight:bold}
-#res{text-align:center;font-size:1.1rem;transition:background .2s}#res .big{font-size:2.4rem}
-.warn{background:#fff3cd;color:#8a6d00}.good{background:#d9f3e1;color:#176b35}.bad{background:#fbe0e0;color:#a11}.wait{background:#fff;color:#555}
-#reader{width:100%;margin-top:10px;border-radius:12px;overflow:hidden}
-.found{background:#faf8f3;border:1px solid #e3ded3;border-radius:10px;padding:10px 12px;margin-top:8px}
-.ov{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;z-index:20;padding:10px}
-.ovb{background:#fff;border-radius:14px;padding:12px;max-width:96vw;max-height:96vh;overflow:auto;text-align:center}
-.ovb img{max-width:100%;max-height:78vh}
-#toast{position:fixed;left:12px;right:12px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:30;display:flex;flex-direction:column;gap:8px;pointer-events:none;align-items:center}
-.tt{background:#222;color:#fff;padding:10px 16px;border-radius:12px;font-weight:bold;pointer-events:auto;max-width:520px}
-.tt a{color:#7dffaa}
-.login{max-width:420px;margin:0 auto;padding:30px 18px}
-.login h1{text-align:center;color:var(--g);margin:10px 0 0}
-</style></head><body>
-<div id="app"></div><div id="toast"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
-<script>
-// ======= رابط الـ Web app بتاع Apps Script (اللى بينتهى بـ /exec) =======
-const APP_URL = 'https://script.google.com/macros/s/AKfycbzhOG6LUUf8TcIw6Hal3r6waD5HkAUV_uSf0IWS7qwVT5nMCD4Q3MgubraayKBfIJayrA/exec';
-const EVENT = 'Together 11';
+// ======= الإعدادات: عدّل القيم دي قبل النشر =======
+const CFG = {
+  EVENT_NAME: 'Together 11',
+  PRICE: 250,                       // سعر التذكرة بدون الباص (بدون كسور)
+  PRICE_BUS: 300,                   // سعر التذكرة مع الباص
+  BUSES: 6,                         // عدد الباصات
+  BUS_CAPACITY: 50,                 // سعة الباص الواحد
+  MAX_GROUP: 50,                    // أقصى عدد أشخاص فى تسجيل المجموعة الواحدة
+  CONTACTS: [                       // بيانات المسؤولين للتواصل (بتظهر تحت الصفحة الأولى). عدّلهم أو امسح القايمة عشان تختفى
+    { name: 'اسم المسؤول الأول', phone: '01000000000' },
+    { name: 'اسم المسؤول التانى', phone: '01000000001' }
+  ],
+  CAPACITY: 1000,                   // السعة لكل يوم
+  DAYS: { Friday: 'الجمعة', Saturday: 'السبت' },
+  PAY_INFO: 'InstaPay: Test@instapay | فودافون كاش: 01228751117',
+  REVIEW_HOLD_H: 48,                // ساعات حجز المكان أثناء مراجعة البطاقة
+  PAY_HOLD_H: 24,                   // ساعات حجز المكان بعد قبول البطاقة لحد ما يرفع صورة التحويل
+  APP_URL: 'https://script.google.com/macros/s/AKfycbzhOG6LUUf8TcIw6Hal3r6waD5HkAUV_uSf0IWS7qwVT5nMCD4Q3MgubraayKBfIJayrA/exec',      // رابط الـ Web app العام (بينتهى بـ /exec). كل اللينكات اللى بتتبعت للناس بتتبنى منه
+  SCAN_PAGE: 'https://andrewalkess.github.io/Scanner/',   // رابط صفحة الـ scanner على GitHub Pages (الـ QR هيشاور عليها)
+  SEND_EMAIL: false,                   // false = الإرسال بواتساب بس (من اللوحة). true = كمان يبعت إيميل تلقائى
+  ADMIN_PASSWORD: 'Andrew',   // لازم تتغير: طويل ومش رقم الدفع ولا أى حاجة ظاهرة للناس
+  SCANNER_KEY: '12345678'     // لازم تتغير: 8 حروف/أرقام على الأقل، بيتكتب مرة واحدة على موبايل الأمن
+};
+const H = ['id','token','name','phone','email','day','amount','txref','status','used_at','created','idfile','idok_at','payfile','payhash','eparchy','church','birth','bus','group','gid'];   // group = اسم المسؤول عن المجموعة (للعرض)، gid = مفتاح ربط الأعضاء (سرى)
 
-const $ = s => document.querySelector(s);
-const ls = { get: k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, put: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: k => { try { localStorage.removeItem(k); } catch (e) {} } };
-function h(t, a, ...c) { const e = document.createElement(t); for (const k in a || {}) { if (k.startsWith('on')) e[k] = a[k]; else if (a[k] != null) e.setAttribute(k, a[k]); } e.append(...c.flat().filter(x => x != null)); return e; }
-const errMsg = e => tr((e && e.message ? e.message : String(e)).replace(/^Error:\s*/, ''));
-// ---- ترجمة رسائل السيرفر للإنجليزى ----
-const DAY_EN = { 'الجمعة': 'Friday', 'السبت': 'Saturday' };
-const dEn = x => DAY_EN[x] || x;
-const latin = t => String(t).replace(/[٠-٩]/g, c => '٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/م/g, 'PM').replace(/ص/g, 'AM');
-const MSG = [
-  [/^الباسورد غلط$/, 'Wrong password'], [/^مفتاح غير صحيح$/, 'Invalid key'], [/^كود غير صالح$/, 'Invalid code'], [/^تذكرة غير صالحة$/, 'Invalid ticket'],
-  [/^اليوم غير صحيح$/, 'Invalid day'], [/^اختار اليوم$/, 'Choose a day'], [/^خطأ فى الطلب$/, 'Request error'], [/^أمر غير معروف$/, 'Unknown command'],
-  [/^غير موجود$/, 'Not found'], [/^التذكرة مستخدمة$/, 'Ticket already used'], [/^الطلب مش فى المرحلة دى$/, 'Request is not at this stage'],
-  [/^اليوم اكتمل العدد$/, 'This day is full'], [/^لا توجد صورة$/, 'No image'], [/^لا توجد صورة تحويل$/, 'No transfer receipt'], [/^مفيش إيميل لإعادة إرساله$/, 'Nothing to resend'],
-  [/^الكود ليوم (.+)$/, m => 'Code is for ' + dEn(m[1])], [/^التذكرة ليوم (.+)$/, m => 'Ticket is for ' + dEn(m[1])],
-  [/^الكود مستخدم قبل كده: (.*) \((.*)\)$/, m => 'Code already used - entered: ' + m[1] + ' (' + latin(m[2]) + ')'],
-  [/^الكود مستخدم قبل كده \((.*)\)$/, m => 'Code already used (' + latin(m[1]) + ')'], [/^دخل قبل كده \((.*)\)$/, m => 'Already checked in (' + latin(m[1]) + ')'],
-  [/^مسموح بالدخول: (.*)$/, m => 'Entry allowed: ' + m[1]], [/^صالح \(معاينة، لم يُسجَّل الدخول\): (.*)$/, m => 'Valid (preview, entry not recorded): ' + m[1]],
-  [/^تم التأكيد لكن الإيميل لم يُرسل \((.*?)\)\./, m => 'Confirmed, but the email was not sent (' + m[1] + '). Use the WhatsApp button or Resend later.'],
-  [/^انتهى حد الإيميلات اليومى$/, 'Daily email limit reached'],
-  [/^ركب الباص (\d+) \((\d+\/\d+)\): (.*)$/, m => 'Boarded bus ' + m[1] + ' (' + m[2] + '): ' + m[3]],
-  [/^صالح للباص \(معاينة، لم يُسجَّل\): (.*)$/, m => 'Valid for the bus (preview, not recorded): ' + m[1]],
-  [/^مش مسجل باص: (.*)$/, m => 'Not registered for the bus: ' + m[1]],
-  [/^تنبيه: ركب قبل كده فى الباص (\d+) \((.*)\)$/, m => 'Warning: already boarded bus ' + m[1] + ' (' + latin(m[2]) + ')'],
-  [/^ركب قبل كده فى الباص (\d+) \((.*)\)$/, m => 'Already boarded bus ' + m[1] + ' (' + latin(m[2]) + ')'],
-  [/^الباص (\d+) اتملى \((\d+\/\d+)\)$/, m => 'Bus ' + m[1] + ' is full (' + m[2] + ')'],
-  [/^اختار رقم الباص$/, 'Choose a bus number'], [/^اتجاه غير صحيح$/, 'Invalid direction'],
-  [/^مفيش أعضاء فى المرحلة دى$/, 'No group members at this stage'],
-];
-function tr(m) { m = String(m == null ? '' : m); for (const [re, f] of MSG) { const x = m.match(re); if (x) return typeof f === 'function' ? f(x) : f; } return m; }
-
-const tokenOf = s => { s = String(s || '').trim(); const m = s.match(/[?&]s=([0-9A-Za-z]+)/); return m ? m[1] : s; };
-
-const S = { role: '', cred: '', tab: '', day: ls.get('sd') || 'Friday', prev: ls.get('sp') === '1', f: { status: 'review', q: '', day: '', page: 1 }, urlToken: new URLSearchParams(location.search).get('s') || '' };
-let timer = null, scanner = null, busy = false;
-
-// ---------- الاتصال بالسيرفر ----------
-async function api(body, ms) {
-  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), ms || 25000);
-  try {
-    const resp = await fetch(APP_URL, { method: 'POST', signal: ctl.signal, body: JSON.stringify(body) });
-    return await resp.json();
-  } finally { clearTimeout(to); }
+function sheet_() {
+  const ss = SpreadsheetApp.getActive();
+  let s = ss.getSheetByName('Registrations');
+  if (!s) {
+    s = ss.insertSheet('Registrations');
+    s.appendRow(H);
+    ['B:B','D:D','H:H'].forEach(r => s.getRange(r).setNumberFormat('@')); // نص (منع تحويل الأرقام)
+    s.getRange('J:K').setNumberFormat('yyyy-mm-dd hh:mm');                // التاريخ والوقت
+    s.setFrozenRows(1);
+    try { fmtSheet_(s); } catch (e) {}
+  }
+  const lc = s.getLastColumn();
+  if (lc < H.length) {
+    s.getRange(1, lc + 1, 1, H.length - lc).setValues([H.slice(lc)]);  // يضيف العناوين الناقصة بس
+    try { ['group', 'gid'].forEach(k => s.getRange(col_(k) + ':' + col_(k)).setNumberFormat('@')); } catch (e) {}
+    try { fmtSheet_(s); } catch (e) {}
+  }
+  return s;
 }
-const auth = () => S.role === 'admin' ? { pw: S.cred } : { key: S.cred };
-async function adm(action, extra) {
-  const r = await api(Object.assign({ action: action, pw: S.cred }, extra || {}));
-  if (!r.ok) throw new Error(r.msg || 'An error occurred');
-  return r.data;
+function col_(name) { return String.fromCharCode(65 + H.indexOf(name)); }   // اسم العمود بالحرف (A, B, ...)
+function fmtSheet_(s) {   // تنسيق تاريخ الميلاد + ألوان الحالة
+  const bc = col_('birth'), sc = col_('status'), sci = H.indexOf('status') + 1;
+  s.getRange(bc + '2:' + bc).setNumberFormat('yyyy-mm-dd');
+  const range = s.getRange(sc + '2:' + sc);
+  const rule = (txt, bg) => SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo(txt).setBackground(bg).setRanges([range]).build();
+  const keep = s.getConditionalFormatRules().filter(r => !r.getRanges().some(g => g.getColumn() <= sci && g.getLastColumn() >= sci));
+  s.setConditionalFormatRules(keep.concat([rule('review', '#FFA726'), rule('pending', '#FFF176'), rule('approved', '#81C784'), rule('rejected', '#E57373')]));
+}
+function setupSheetFormat() { fmtSheet_(sheet_()); }   // تقدر تشغّلها يدوى من المحرر لو الألوان ماظهرتش
+function all_() {
+  const v = sheet_().getDataRange().getValues();
+  return v.slice(1).map((r, i) => { const o = { row: i + 2 }; H.forEach((h, j) => o[h] = r[j]); return o; });
+}
+function set_(row, col, val) { sheet_().getRange(row, H.indexOf(col) + 1).setValue(val); }
+function held_(r) {   // هل المكان محجوز لهذا الطلب؟
+  const now = Date.now();
+  if (r.status === 'approved') return true;
+  if (r.status === 'review') return now - r.created < CFG.REVIEW_HOLD_H * 3600000;
+  if (r.status === 'pending') return !!r.txref || !!r.payfile || now - (r.idok_at || r.created) < CFG.PAY_HOLD_H * 3600000;
+  return false;
+}
+function taken_(rows, day) { return rows.filter(r => r.day === day && held_(r)).length; }
+function parseBirth_(s) {
+  const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  const y = +m[1], mo = +m[2], da = +m[3], d = new Date(y, mo - 1, da);
+  if (d.getFullYear() !== y || d.getMonth() !== mo - 1 || d.getDate() !== da) return null;
+  if (y < 1920 || d > new Date()) return null;
+  return d;
+}
+function fmtDate_(v) { return v instanceof Date ? Utilities.formatDate(v, Session.getScriptTimeZone(), 'yyyy-MM-dd') : String(v || ''); }
+function esc_(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function withLock_(fn) {
+  const l = LockService.getScriptLock(); l.waitLock(25000);
+  try { return fn(); } finally { l.releaseLock(); }
+}
+function url_() {   // دايماً رابط /exec العام، مهما كان الرابط اللى فتحت منه (/dev بيطلب صلاحية تعديل)
+  return /^https:\/\/script\.google\.com\/.+\/exec$/.test(CFG.APP_URL) ? CFG.APP_URL : ScriptApp.getService().getUrl();
 }
 
-// ---------- أدوات واجهة ----------
-function toast(msg, ms, link) {
-  const t = h('div', { class: 'tt' }, msg, link ? h('a', { href: link, target: '_blank', rel: 'noopener' }, ' Open WhatsApp') : null);
-  $('#toast').append(t); setTimeout(() => t.remove(), ms || (link ? 9000 : 3500));
+// ---------- أدوات الـ scanner ----------
+function norm_(s) { return String(s || '').trim().replace(/[٠-٩]/g, c => '٠١٢٣٤٥٦٧٨٩'.indexOf(c)); }   // يقبل الأرقام العربى
+function keyOk_(k) { const x = norm_(CFG.SCANNER_KEY); return x.length > 0 && norm_(k) === x; }
+function tokenOf_(c) {   // يقبل التوكن لوحده أو الرابط الكامل (?s=التوكن)
+  c = String(c || '').trim();
+  const m = c.match(/[?&]s=([0-9A-Za-z]+)/);
+  return m ? m[1] : c;
 }
-function beep(ok) {
-  try {
-    const A = window.AudioContext || window.webkitAudioContext; if (!A) return;
-    const c = beep.c || (beep.c = new A()), t = c.currentTime;
-    (ok === 'warn' ? [[660, 0, .1], [660, .16, .1]] : ok ? [[880, 0, .12]] : [[220, 0, .15], [220, .22, .15]]).forEach(([f, s, d]) => {
-      const o = c.createOscillator(), g = c.createGain(); o.frequency.value = f; o.type = 'square'; g.gain.value = .08;
-      o.connect(g); g.connect(c.destination); o.start(t + s); o.stop(t + s + d);
+function scanUrl_(token) { return CFG.SCAN_PAGE + '?s=' + token; }
+
+// ---------- واتساب ----------
+function waPhone_(p) {   // يحوّل الرقم للصيغة الدولية (مصر): 01012345678 -> 201012345678
+  let d = String(p || '').replace(/\D/g, '');
+  if (d.indexOf('00') === 0) d = d.slice(2);
+  else if (d.charAt(0) === '0') d = '20' + d.slice(1);
+  else if (d.length === 10 && d.charAt(0) === '1') d = '20' + d;
+  return d;
+}
+function linkOf_(r) { return url_() + (r.gid ? '?g=' + r.gid : '?t=' + r.token); }   // أعضاء المجموعة بيستخدموا لينك المجموعة
+function waUrl_(r, status) {   // رابط واتساب برسالة جاهزة: رابط الدفع (pending) أو التذكرة بالـ QR (approved)
+  const phone = waPhone_(r.phone);
+  if (!phone) return '';
+  const link = linkOf_(r), day = CFG.DAYS[r.day];
+  let msg;
+  if (r.gid) {
+    if (status === 'pending')
+      msg = 'أهلاً،\nتم قبول بطاقات مجموعتك لحضور ' + CFG.EVENT_NAME + '.\nكمّل الدفع للمجموعة من الرابط ده، وارفع صورة التحويل بعد ما تحوّل خلال ' + CFG.PAY_HOLD_H + ' ساعة عشان أماكنكم تفضل محجوزة:\n' + link;
+    else if (status === 'approved')
+      msg = 'أهلاً،\nتم تأكيد دفع مجموعتك لحضور ' + CFG.EVENT_NAME + '.\nتذاكر الكل (كل واحد له QR صالح لمرة واحدة) من الرابط ده:\n' + link + '\nوزّع كل كود على صاحبه.';
+    else return '';
+  } else if (status === 'pending')
+    msg = 'أهلاً ' + r.name + '،\nتم قبول طلبك لحضور ' + CFG.EVENT_NAME + ' يوم ' + day + '.\nكمّل الدفع من الرابط ده، وارفع صورة التحويل بعد ما تحوّل خلال ' + CFG.PAY_HOLD_H + ' ساعة عشان مكانك يفضل محجوز:\n' + link;
+  else if (status === 'approved')
+    msg = 'أهلاً ' + r.name + '،\nتم تأكيد دفعك لحضور ' + CFG.EVENT_NAME + ' يوم ' + day + '.\nتذكرتك والـ QR (صالح لمرة واحدة) من الرابط ده:\n' + link + '\nاعرض الكود عند الدخول.';
+  else return '';
+  return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+}
+
+function doGet(e) {
+  const t = HtmlService.createTemplateFromFile('Index');
+  const j = o => JSON.stringify(o).replace(/</g, '\\u003c');
+  t.params = j(e.parameter || {});
+  t.cfg = j({ name: CFG.EVENT_NAME, price: CFG.PRICE, priceBus: CFG.PRICE_BUS, maxGroup: CFG.MAX_GROUP, contacts: CFG.CONTACTS, pay: CFG.PAY_INFO, days: CFG.DAYS, payH: CFG.PAY_HOLD_H });
+  return t.evaluate().setTitle(CFG.EVENT_NAME)
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+// ---------- للمستخدمين ----------
+function availability() {
+  const rows = all_(), o = {};
+  Object.keys(CFG.DAYS).forEach(d => o[d] = taken_(rows, d) < CFG.CAPACITY); // true = متاح
+  return o;
+}
+function register(d) {
+  const name = String(d.name || '').trim(), phone = String(d.phone || '').trim();
+  const email = String(d.email || '').trim().toLowerCase();
+  if (!CFG.DAYS[d.day]) throw new Error('اليوم غير صحيح');
+  if (!name || !/^[0-9+ ]{8,15}$/.test(phone)) throw new Error('راجع الاسم ورقم الموبايل');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('الإيميل غير صحيح');
+  const eparchy = String(d.eparchy || '').trim(), church = String(d.church || '').trim();
+  if (!eparchy || !church || eparchy.length > 80 || church.length > 80) throw new Error('اكتب الأبراشية والكنيسة');
+  const birth = parseBirth_(d.birth);
+  if (!birth) throw new Error('راجع تاريخ الميلاد');
+  const bus = d.bus === 'yes' ? 'yes' : (d.bus === 'no' ? 'no' : '');
+  if (!bus) throw new Error('اختار هتستخدم الباص ولا لا');
+  if (!/^data:image\/jpeg;base64,/.test(String(d.idImg || '')) || d.idImg.length > 2000000)
+    throw new Error('ارفع صورة واضحة للبطاقة الشخصية');
+  return withLock_(() => {
+    const rows = all_();
+    if (taken_(rows, d.day) >= CFG.CAPACITY) throw new Error('للأسف اكتمل العدد لهذا اليوم');
+    const amount = bus === 'yes' ? CFG.PRICE_BUS : CFG.PRICE;   // 300 مع الباص، 250 من غيره
+    const token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
+    const fileId = saveId_(d.idImg, token);
+    sheet_().appendRow([rows.length + 1, token, name, phone, email, d.day, amount, '', 'review', '', new Date(), fileId, '', '', '', eparchy, church, birth, bus]);
+    return { token: token, url: url_() + '?t=' + token };
+  });
+}
+function getTicket(token) {
+  const r = all_().filter(x => x.token === String(token))[0];
+  if (!r) return null;
+  return { name: r.name, day: r.day, amount: r.status === 'pending' ? Number(r.amount) : 0, txref: r.txref, paid: !!(r.txref || r.payfile), status: r.status,
+           used: !!r.used_at, inGroup: !!r.gid, token: r.status === 'approved' ? r.token : null,
+           scanUrl: r.status === 'approved' ? scanUrl_(r.token) : null, url: url_() + '?t=' + r.token };
+}
+function submitProof(token, img) {   // رفع صورة إيصال التحويل بدل رقم العملية
+  img = String(img || '');
+  if (!/^data:image\/jpeg;base64,/.test(img) || img.length > 3000000) throw new Error('ارفع صورة واضحة لإيصال التحويل');
+  const bytes = Utilities.base64Decode(img.split(',')[1]);
+  const hash = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, bytes).map(b => ('0' + (b & 0xff).toString(16)).slice(-2)).join('');
+  return withLock_(() => {
+    const rows = all_();
+    const r = rows.filter(x => x.token === String(token))[0];
+    if (!r || r.status !== 'pending') throw new Error('الطلب غير متاح');
+    if (rows.some(x => x.row !== r.row && x.payhash && String(x.payhash) === hash)) throw new Error('الصورة دى اتستخدمت قبل كده');
+    const old = r.payfile;
+    set_(r.row, 'payfile', savePay_(bytes, r.token));
+    set_(r.row, 'payhash', hash);
+    if (old) { try { DriveApp.getFileById(idOf_(old)).setTrashed(true); } catch (e) {} }
+    return true;
+  });
+}
+
+// ---------- تسجيل مجموعة (لحد MAX_GROUP شخص) ----------
+// العميل بيسجّل كل شخص فى طلب لوحده (عشان حجم الصور)، وكلهم بيشاركوا نفس الـ gid ونفس رقم الواتساب والإيميل.
+function newGroupId() { return Utilities.getUuid().replace(/-/g, ''); }
+function registerMember(gid, c, d) {
+  gid = String(gid || '');
+  if (!/^[0-9a-f]{32}$/.test(gid)) throw new Error('رابط المجموعة غير صحيح');
+  c = c || {}; d = d || {};
+  const name = String(d.name || '').trim(), phone = String(c.phone || '').trim(), email = String(c.email || '').trim().toLowerCase();
+  if (!CFG.DAYS[d.day]) throw new Error('اليوم غير صحيح');
+  if (!name) throw new Error('اكتب الاسم');
+  const leader = String(c.leader || '').trim().slice(0, 80) || name;   // المسؤول = الشخص الأول فى الطلب
+  if (!/^[0-9+ ]{8,15}$/.test(phone)) throw new Error('راجع رقم الموبايل');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('الإيميل غير صحيح');
+  const eparchy = String(d.eparchy || '').trim(), church = String(d.church || '').trim();
+  if (!eparchy || !church || eparchy.length > 80 || church.length > 80) throw new Error('اكتب الأبراشية والكنيسة');
+  const birth = parseBirth_(d.birth);
+  if (!birth) throw new Error('راجع تاريخ الميلاد');
+  const bus = d.bus === 'yes' ? 'yes' : (d.bus === 'no' ? 'no' : '');
+  if (!bus) throw new Error('اختار هتستخدم الباص ولا لا');
+  if (!/^data:image\/jpeg;base64,/.test(String(d.idImg || '')) || d.idImg.length > 2000000)
+    throw new Error('ارفع صورة واضحة للبطاقة الشخصية');
+  return withLock_(() => {
+    const rows = all_();
+    const inGroup = rows.filter(r => r.gid === gid).length;
+    if (inGroup >= CFG.MAX_GROUP) throw new Error('الحد الأقصى للمجموعة ' + CFG.MAX_GROUP + ' شخص');
+    if (taken_(rows, d.day) >= CFG.CAPACITY) throw new Error('للأسف اكتمل العدد لهذا اليوم');
+    const amount = bus === 'yes' ? CFG.PRICE_BUS : CFG.PRICE;
+    const token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
+    const fileId = saveId_(d.idImg, token);
+    sheet_().appendRow([rows.length + 1, token, name, phone, email, d.day, amount, '', 'review', '', new Date(), fileId, '', '', '', eparchy, church, birth, bus, leader, gid]);
+    return { ok: true, count: inGroup + 1, url: url_() + '?g=' + gid };
+  });
+}
+function getGroup(gid) {
+  gid = String(gid || '');
+  const rows = all_().filter(r => r.gid && r.gid === gid);
+  if (!rows.length) return null;
+  const members = rows.map(r => ({ name: r.name, day: r.day, bus: r.bus === 'yes', status: r.status, amount: Number(r.amount),
+    paid: !!(r.txref || r.payfile), used: !!r.used_at,
+    scanUrl: r.status === 'approved' ? scanUrl_(r.token) : null,
+    ticketUrl: r.status !== 'rejected' ? url_() + '?t=' + r.token : null }));   // لينك تذكرة الشخص لوحده (للمشاركة)
+  const due = members.filter(m => m.status === 'pending' && !m.paid).reduce((a, m) => a + m.amount, 0);
+  const waiting = members.filter(m => m.status === 'pending' && m.paid).length;
+  return { members: members, due: due, waiting: waiting, url: url_() + '?g=' + gid };
+}
+function submitGroupProof(gid, img) {   // إيصال واحد للمجموعة: بيتسجّل على كل اللى بانتظار الدفع ومالهمش إيصال
+  gid = String(gid || ''); img = String(img || '');
+  if (!/^data:image\/jpeg;base64,/.test(img) || img.length > 3000000) throw new Error('ارفع صورة واضحة لإيصال التحويل');
+  const bytes = Utilities.base64Decode(img.split(',')[1]);
+  const hash = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, bytes).map(b => ('0' + (b & 0xff).toString(16)).slice(-2)).join('');
+  return withLock_(() => {
+    const rows = all_();
+    const todo = rows.filter(r => r.gid && r.gid === gid && r.status === 'pending' && !r.txref && !r.payfile);
+    if (!todo.length) throw new Error('مفيش حاجة مطلوب دفعها دلوقتى');
+    if (rows.some(x => x.payhash && String(x.payhash) === hash)) throw new Error('الصورة دى اتستخدمت قبل كده');
+    const file = savePay_(bytes, todo[0].token);
+    todo.forEach(r => { set_(r.row, 'payfile', file); set_(r.row, 'payhash', hash); });
+    return todo.length;
+  });
+}
+function adminActGroup(pw, gid, action) {   // قبول بطاقات أو تأكيد دفع كل أعضاء المجموعة مرة واحدة
+  auth_(pw);
+  if (action !== 'approveId' && action !== 'approve') throw new Error('أمر غير معروف');
+  gid = String(gid || '');
+  return withLock_(() => {
+    const need = action === 'approveId' ? 'review' : 'pending', next = action === 'approveId' ? 'pending' : 'approved';
+    const rows = all_(), members = rows.filter(r => r.gid && r.gid === gid);
+    const todo = members.filter(r => r.status === need);
+    if (!todo.length) throw new Error('مفيش أعضاء فى المرحلة دى');
+    let n = 0, skipped = 0;
+    todo.forEach(r => {
+      if (!held_(r) && taken_(rows, r.day) >= CFG.CAPACITY) { skipped++; return; }
+      set_(r.row, 'status', next); r.status = next;
+      if (action === 'approveId') set_(r.row, 'idok_at', new Date());
+      n++;
     });
-  } catch (e) {}
-}
-function modal(src, cap) {
-  const ov = h('div', { class: 'ov', onclick: () => ov.remove() }, h('div', { class: 'ovb' }, h('p', {}, cap + ' (tap anywhere to close)'), h('img', { src: src })));
-  document.body.append(ov);
-}
-const fmtTime = ms => new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-
-// ---------- تسجيل الدخول ----------
-function loginView(msg) {
-  let role = ls.get('role') || 'admin';
-  const inp = h('input', { type: 'password', autocomplete: 'off', placeholder: 'Password', onkeydown: e => { if (e.key === 'Enter') go(); } });
-  const m = h('p', { class: 'err' }, msg || '');
-  const seg = h('div', { class: 'seg' });
-  const draw = () => { seg.replaceChildren(
-    h('button', { class: role === 'admin' ? 'on' : '', onclick: () => { role = 'admin'; draw(); } }, 'Admin'),
-    h('button', { class: role === 'security' ? 'on' : '', onclick: () => { role = 'security'; draw(); } }, 'Security (scanner)'));
-    inp.placeholder = role === 'admin' ? 'Admin password' : 'Scanner key'; };
-  draw();
-  const btn = h('button', { onclick: () => go() }, 'Sign in');
-  async function go() {
-    if (!inp.value.trim()) return;
-    btn.disabled = true; m.textContent = '';
-    try { await login(role, inp.value.trim()); }
-    catch (e) { m.textContent = errMsg(e); btn.disabled = false; }
-  }
-  $('#app').replaceChildren(h('div', { class: 'login' }, h('h1', {}, EVENT), h('p', { class: 'mut', style: 'text-align:center' }, 'Admin & scanner'),
-    h('div', { class: 'box' }, seg, h('label', {}, 'Credentials'), inp, btn, m)));
-}
-async function login(role, cred) {
-  S.role = role; S.cred = cred;
-  if (role === 'admin') await adm('adminLogin');
-  else { const r = await api({ action: 'find', key: cred, query: 'x' }); if (!r.ok) throw new Error(r.msg || 'مفتاح غير صحيح'); }
-  ls.put('role', role); ls.put('cred', cred);
-  start();
-}
-function logout() { ls.del('cred'); S.role = ''; S.cred = ''; stopCam(); clearInterval(timer); loginView(); }
-
-// ---------- الهيكل ----------
-function start() {
-  const tabs = S.role === 'admin' ? [['home', '📊', 'Dashboard'], ['orders', '📋', 'Orders'], ['scan', '📷', 'Gate'], ['bus', '🚌', 'Bus']] : [['scan', '📷', 'Gate'], ['bus', '🚌', 'Bus']];
-  const nav = h('nav', {}, ...tabs.map(t => h('button', { id: 'n-' + t[0], onclick: () => go(t[0]) }, h('b', {}, t[1]), t[2])));
-  const hd = h('header', {}, h('h1', {}, EVENT), h('button', { onclick: () => go(S.tab, true) }, 'Refresh'), h('button', { onclick: logout }, 'Log out'));
-  $('#app').replaceChildren(hd, h('div', { id: 'view' }), nav);
-  go(S.urlToken ? 'scan' : tabs[0][0]);
-}
-function go(tab, force) {
-  if (tab === S.tab && !force) return;
-  if (tab !== 'scan') stopCam();
-  clearInterval(timer);
-  S.tab = tab;
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.id === 'n-' + tab));
-  window.scrollTo(0, 0);
-  $('#app').style.maxWidth = tab === 'orders' ? '1500px' : '1100px';
-  ({ home: homeView, orders: ordersView, scan: scanView, bus: busView })[tab]();
-}
-
-// ---------- الرئيسية (إحصائيات حية) ----------
-function homeView() {
-  const v = $('#view'); v.replaceChildren(h('p', { class: 'mut' }, 'Loading...'));
-  const load = async () => {
-    try {
-      const d = await adm('adminStats');
-      if (S.tab !== 'home') return;
-      const days = Object.keys(d.days).map(k => {
-        const x = d.days[k], pct = x.approved ? Math.round(x.entered * 100 / x.approved) : 0, cap = Math.round(x.approved * 100 / x.capacity);
-        return h('div', { class: 'box' }, h('h2', { style: 'margin:0 0 8px' }, dEn(x.label)),
-          h('div', { class: 'kpis' },
-            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.entered)), h('small', {}, 'Checked in')),
-            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.approved)), h('small', {}, 'Confirmed tickets')),
-            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(Math.max(0, x.approved - x.entered))), h('small', {}, 'Not arrived yet')),
-            h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.bus || 0)), h('small', {}, 'Bus riders (confirmed)'))),
-          h('p', { class: 'mut', style: 'margin:10px 0 0' }, 'Attendance of confirmed: ' + pct + '%'), h('div', { class: 'bar' }, h('i', { style: 'width:' + pct + '%' })),
-          h('p', { class: 'mut', style: 'margin:0' }, 'Confirmed seats: ' + x.approved + ' of ' + x.capacity + ' (' + cap + '%)'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, cap) + '%;background:#c9a227' })));
-      });
-      const st = d.status, L = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected' };
-      const chips = h('div', { class: 'chips' }, ...Object.keys(L).map(k => h('span', { class: 'chip' }, h('span', { class: 'st st-' + k, style: 'margin-left:6px' }, L[k]), String(st[k] || 0))), h('span', { class: 'chip' }, 'All requests: ' + d.total));
-      const rp = d.repeats || [];
-      const repeats = h('div', { class: 'box' }, h('h3', { style: 'margin:0 0 6px' }, 'Repeated QR scans at the gate'),
-        ...rp.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + dEn(r.day) + ' - entered ' + fmtTime(r.first) + ', scanned again ' + fmtTime(r.at)))));
-      const recent = h('div', { class: 'box' }, h('h3', { style: 'margin:0 0 6px' }, 'Latest check-ins'),
-        ...(d.recent.length ? d.recent.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + dEn(r.day) + ' - ' + fmtTime(r.at)))) : [h('p', { class: 'mut' }, 'No one has checked in yet')]));
-      v.replaceChildren(...days, h('div', { class: 'box' }, chips), recent, ...(rp.length ? [repeats] : []), h('p', { class: 'mut', style: 'text-align:center;font-size:.8rem' }, 'Auto-refreshes every 15 s - last update ' + fmtTime(Date.now())));
-    } catch (e) { v.replaceChildren(h('p', { class: 'err' }, errMsg(e))); }
-  };
-  load(); timer = setInterval(load, 15000);
-}
-
-// ---------- الطلبات ----------
-function ordersView() {
-  const v = $('#view'), F = S.f;
-  const ST = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected' };
-  const LBL = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected', entered: 'Checked in', all: 'All' };
-  const opt = (val, t) => h('option', { value: val }, t);
-  let qt = null;
-  const q = h('input', { placeholder: 'Search by name or phone', value: F.q, oninput: () => { clearTimeout(qt); qt = setTimeout(() => { F.q = q.value; F.page = 1; load(); }, 400); } });
-  const fs = h('select', { onchange: () => { F.status = fs.value; F.page = 1; load(); } }, ...Object.keys(LBL).map(k => opt(k, LBL[k])));
-  fs.value = F.status;
-  const fd = h('select', { onchange: () => { F.day = fd.value; F.page = 1; load(); } }, opt('', 'All days'), opt('Friday', 'Friday'), opt('Saturday', 'Saturday'));
-  fd.value = F.day;
-  const list = h('tbody', {}), info = h('span', { class: 'mut' });
-  const table = h('table', { class: 'tbl' }, h('thead', {}, h('tr', {}, ...['#', 'Name', 'Day', 'Bus', 'Group', 'Receipt', 'Status', 'Actions'].map(x => h('th', {}, x)))), list);
-  const prevB = h('button', { class: 'ghost', onclick: () => { F.page--; load(); } }, 'Previous');
-  const nextB = h('button', { class: 'ghost', onclick: () => { F.page++; load(); } }, 'Next');
-  v.replaceChildren(h('div', { class: 'row' }, q, fs, fd), h('div', { style: 'height:12px' }), h('div', { class: 'tw' }, table), h('div', { class: 'pg' }, prevB, info, nextB));
-
-  async function viewImg(fn, r, title) { try { modal(await adm(fn, { id: r.id }), r.name + ' - ' + title); } catch (e) { toast(errMsg(e)); } }
-  function card(r) {
-    const acts = h('div', { class: 'acts' });
-    const add = (t, fn, cls) => acts.append(h('button', { class: 'b ' + (cls || ''), onclick: fn }, t));
-    const wa = t => { if (r.wa) acts.append(h('a', { class: 'b wa', href: r.wa, target: '_blank', rel: 'noopener' }, t)); };
-    const act = (a, t, cls, openWa) => add(t, async ev => {
-      if (a === 'reject' && !confirm('Reject ' + r.name + "'s request?")) return;
-      const btn = ev.currentTarget; btn.disabled = true;
-      const w = openWa ? window.open('', '_blank') : null;   // لازم يتفتح فورا مع الضغطة عشان المتصفح ما يمنعوش
-      try {
-        const x = await adm('adminAct', { id: r.id, act: a });
-        if (x.msg) toast(tr(x.msg), 6000);
-        if (w) { if (x.wa) w.location = x.wa; else w.close(); }
-        else if (openWa && x.wa) toast('Browser blocked WhatsApp.', 9000, x.wa);
-      } catch (e) { if (w) w.close(); toast(errMsg(e)); }
-      load();
-    }, cls);
-    const actGroup = (a, t, cls) => add(t, async ev => {
-      if (!confirm(t + '?')) return;
-      const btn = ev.currentTarget; btn.disabled = true;
-      const w = window.open('', '_blank');
-      try {
-        const x = await adm('adminActGroup', { gid: r.gid, act: a });
-        toast('Done: ' + x.n + (x.skipped ? ', skipped ' + x.skipped + ' (day full)' : ''), 6000);
-        if (x.msg && !x.skipped) toast(tr(x.msg), 6000);
-        if (w) { if (x.wa) w.location = x.wa; else w.close(); }
-        else if (x.wa) toast('Browser blocked WhatsApp.', 9000, x.wa);
-      } catch (e) { if (w) w.close(); toast(errMsg(e)); }
-      load();
-    }, cls);
-    if (r.hasId) add('ID card', () => viewImg('adminGetId', r, 'ID card'), 'ghost');
-    if (r.hasPay) add('Receipt', () => viewImg('adminGetPay', r, 'Transfer receipt'), 'ghost');
-    if (r.status === 'review') { act('approveId', 'Approve + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gr > 1) actGroup('approveId', 'Approve all ' + r.gr + ' cards in group', 'ghost'); }
-    else if (r.status === 'pending') { wa('WhatsApp (payment link)'); act('approve', 'Confirm payment + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gp > 1) actGroup('approve', 'Confirm payment for all ' + r.gp + ' in group', 'ghost'); }
-    else if (r.status === 'approved') { wa('WhatsApp (ticket)'); }
-    return h('tr', {}, h('td', { class: 'mut' }, String(r.id)), h('td', {}, h('b', {}, r.name)), h('td', {}, dEn(r.day)),
-      h('td', {}, r.bus ? 'Bus' : '-'), h('td', {}, r.gid ? h('b', {}, r.gname || 'Group') : '-', r.gid ? h('div', { class: 'mut', style: 'font-size:.75rem' }, r.gn + ' people') : null),
-      h('td', {}, r.hasPay ? 'Uploaded' : (r.txref || '-')),
-      h('td', {}, h('span', { class: 'st st-' + r.status }, ST[r.status] || r.status),
-        r.usedAt ? h('div', { class: 'ok', style: 'font-size:.8rem' }, 'In: ' + new Date(r.usedAt).toLocaleString('en-GB')) : null),
-      h('td', { class: 'actd' }, acts));
-  }
-  async function load() {
-    list.style.opacity = .5;
-    try {
-      const d = await adm('adminList', { filter: F.status, q: F.q, page: F.page, day: F.day });
-      F.page = d.page;
-      [...fs.options].forEach(o => { o.textContent = LBL[o.value] + ' (' + (d.counts[o.value] || 0) + ')'; });
-      info.textContent = 'Page ' + d.page + ' of ' + d.pages + ' (' + d.total + ' requests)';
-      prevB.disabled = d.page <= 1; nextB.disabled = d.page >= d.pages;
-      list.replaceChildren(...(d.rows.length ? d.rows.map(card) : [h('tr', {}, h('td', { colspan: '8', class: 'mut' }, 'No results'))]));
-    } catch (e) { toast(errMsg(e)); }
-    list.style.opacity = 1;
-  }
-  load();
-}
-
-// ---------- السكانر ----------
-function stopCam() { if (scanner) { try { scanner.stop(); } catch (e) {} scanner = null; } }
-function scanView() {
-  const v = $('#view');
-  const res = h('div', { id: 'res', class: 'box wait' }, 'Ready');
-  const day = h('select', { onchange: save }, h('option', { value: 'Friday' }, 'Friday'), h('option', { value: 'Saturday' }, 'Saturday'));
-  day.value = S.day;
-  const prev = h('input', { type: 'checkbox', style: 'width:auto', onchange: save }); prev.checked = S.prev;
-  function save() { S.day = day.value; S.prev = prev.checked; ls.put('sd', S.day); ls.put('sp', S.prev ? '1' : '0'); }
-  function show(cls, big, msg) {
-    res.className = 'box ' + cls; res.replaceChildren();
-    if (big) res.append(h('div', { class: 'big' }, big));
-    res.append(h('div', {}, msg));
-    if (cls === 'good' || cls === 'bad') { beep(cls === 'good'); if (navigator.vibrate) navigator.vibrate(cls === 'good' ? 80 : [120, 60, 120]); }
-  }
-  async function check(code) {
-    if (busy) return; busy = true; save();
-    show('wait', '', 'Checking...');
-    try {
-      const r = await api(Object.assign({ action: 'scan', code: code, day: S.day, preview: S.prev }, auth()), 20000);
-      show(r.ok ? 'good' : 'bad', r.ok ? '✔ ALLOWED' : '✖ DENIED', tr(r.msg));
-    } catch (e) { show('bad', '✖', 'Connection failed. Check the internet and try again (do not assume the code was recorded).'); }
-    busy = false;
-  }
-  async function enterById(id) {
-    if (busy) return; busy = true; save();
-    show('wait', '', 'Recording...');
-    try {
-      const r = await api(Object.assign({ action: 'enter', id: id, day: S.day, preview: S.prev }, auth()), 20000);
-      show(r.ok ? 'good' : 'bad', r.ok ? '✔ ALLOWED' : '✖ DENIED', tr(r.msg));
-      if (r.ok) { found.replaceChildren(); q.value = ''; }
-    } catch (e) { show('bad', '✖', 'Connection failed. Check the internet and try again (do not assume the entry was recorded).'); }
-    busy = false;
-  }
-  const camBtn = h('button', { onclick: async () => {
-    if (scanner) { stopCam(); $('#reader').innerHTML = ''; camBtn.textContent = 'Start camera to scan next'; return; }
-    try {
-      scanner = new Html5Qrcode('reader'); let last = '', lastAt = 0;
-      await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, text => {
-        const now = Date.now();
-        if (busy || (text === last && now - lastAt < 4000)) return;   // يتجاهل نفس الكود لو اتمسح تانى بسرعة
-        last = text; lastAt = now; check(tokenOf(text));
-      }, () => {});
-      camBtn.textContent = 'Stop camera';
-    } catch (e) { scanner = null; show('bad', '✖', 'Camera failed. Allow camera access in the browser.'); }
-  } }, 'Start camera to scan next');
-  const q = h('input', { placeholder: 'Phone (at least 4 digits) or name', autocomplete: 'off', onkeydown: e => { if (e.key === 'Enter') find(); } });
-  const found = h('div', {});
-  async function find() {
-    const t = q.value.trim(); save();
-    if (t.length < 3) return show('bad', '✖', 'Enter at least 4 phone digits, or 3 letters of the name');
-    found.textContent = 'Searching...';
-    try {
-      const r = await api(Object.assign({ action: 'find', query: t }, auth()));
-      found.replaceChildren();
-      if (!r.ok) { found.textContent = tr(r.msg) || 'An error occurred'; return; }
-      if (!r.list.length) { found.textContent = 'No confirmed ticket matches'; return; }
-      r.list.forEach(x => {
-        const it = h('div', { class: 'found' }, h('b', {}, x.name), h('div', { class: 'mut' }, dEn(x.dayLabel) + ' - phone ends with ' + x.phoneEnd));
-        if (x.used) it.append(h('div', { class: 'err' }, 'Already checked in (' + new Date(x.usedAt).toLocaleTimeString('en-GB') + ')'));
-        else if (x.day !== S.day) it.append(h('div', { class: 'err' }, 'Ticket is for ' + dEn(x.dayLabel)));
-        else it.append(h('button', { onclick: () => enterById(x.id) }, 'Check in'));
-        found.append(it);
-      });
-    } catch (e) { found.textContent = 'Connection failed. Check the internet and try again.'; }
-  }
-  v.replaceChildren(res,
-    h('div', { class: 'box' }, h('div', { class: 'row' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day)), camBtn, h('div', { id: 'reader' }),
-      h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal' }, prev, 'Preview mode (do not record entry)')),
-    h('div', { class: 'box' }, h('label', { style: 'margin-top:0' }, "If the code doesn't work: search by phone or name"), q, h('button', { class: 'alt', onclick: find }, 'Search'), found,
-      h('p', { class: 'mut', style: 'font-size:.85rem;margin-bottom:0' }, "Compare the name with the person's ID before checking in.")));
-  // لو الصفحة اتفتحت من QR بكاميرا الموبايل العادية (?s=التوكن)
-  if (S.urlToken) { const t = S.urlToken; S.urlToken = ''; history.replaceState(null, '', location.pathname); check(t); }
-}
-
-
-// ---------- الباصات: تسجيل الركوب (ذهاب وعودة) ----------
-function busView() {
-  const v = $('#view');
-  const st = { day: ls.get('bd') || 'Friday', dir: ls.get('bdir') || 'out', no: Number(ls.get('bn')) || 1, prev: ls.get('bp') === '1' };
-  let stats = null;
-  const res = h('div', { id: 'res', class: 'box wait' }, 'Ready');
-  const day = h('select', { onchange: changed }, h('option', { value: 'Friday' }, 'Friday'), h('option', { value: 'Saturday' }, 'Saturday'));
-  const dir = h('select', { onchange: changed }, h('option', { value: 'out' }, 'Outbound trip'), h('option', { value: 'back' }, 'Return trip'));
-  const prev = h('input', { type: 'checkbox', style: 'width:auto', onchange: save }); prev.checked = st.prev;
-  day.value = st.day; dir.value = st.dir;
-  const grid = h('div', { class: 'busgrid' }), summary = h('div', { class: 'mut', style: 'margin-top:10px' });
-  const missingBox = h('div', {});
-  function save() { st.day = day.value; st.dir = dir.value; st.prev = prev.checked; ls.put('bd', st.day); ls.put('bdir', st.dir); ls.put('bn', String(st.no)); ls.put('bp', st.prev ? '1' : '0'); }
-  function changed() { save(); missingBox.replaceChildren(); refresh(); }
-  function draw() {
-    const n = stats ? stats.buses : 6, cap = stats ? stats.cap : 50;
-    grid.replaceChildren(...Array.from({ length: n }, (_, i) => {
-      const c = stats ? stats.counts[i] : 0;
-      return h('button', { class: 'busbtn' + (st.no === i + 1 ? ' on' : '') + (c >= cap ? ' full' : ''), onclick: () => { st.no = i + 1; save(); draw(); } },
-        'Bus ' + (i + 1), h('small', {}, c + ' / ' + cap));
-    }));
-    summary.textContent = stats ? 'Boarded: ' + stats.boarded + ' of ' + stats.expected + ' riders - not yet: ' + Math.max(0, stats.expected - stats.boarded) : '';
-  }
-  async function refresh() {
-    try { const r = await api(Object.assign({ action: 'busStats', day: st.day, dir: st.dir }, auth())); if (r.ok) { stats = r.data; draw(); } } catch (e) {}
-  }
-  function show(cls, big, msg) {
-    res.className = 'box ' + cls; res.replaceChildren();
-    if (big) res.append(h('div', { class: 'big' }, big));
-    res.append(h('div', {}, msg));
-    if (cls === 'good' || cls === 'bad' || cls === 'warn') { beep(cls === 'warn' ? 'warn' : cls === 'good'); if (navigator.vibrate) navigator.vibrate(cls === 'good' ? 80 : cls === 'warn' ? [60, 40, 60] : [120, 60, 120]); }
-  }
-  async function call(body, offline) {
-    if (busy) return; busy = true; save();
-    show('wait', '', 'Checking...');
-    try {
-      const r = await api(Object.assign(body, { day: st.day, dir: st.dir, bus: st.no, preview: st.prev }, auth()), 20000);
-      show(r.warn ? 'warn' : r.ok ? 'good' : 'bad', r.warn ? '⚠ ALREADY BOARDED' : r.ok ? '✔ BOARDED' : '✖ DENIED', tr(r.msg));
-      if (r.ok && !st.prev) { found.replaceChildren(); q.value = ''; }
-      refresh();
-    } catch (e) { show('bad', '✖', offline); }
-    busy = false;
-  }
-  const check = code => call({ action: 'busScan', code: code }, 'Connection failed. Check the internet and try again (do not assume the boarding was recorded).');
-  const camBtn = h('button', { onclick: async () => {
-    if (scanner) { stopCam(); $('#reader').innerHTML = ''; camBtn.textContent = 'Start camera to scan next'; return; }
-    try {
-      scanner = new Html5Qrcode('reader'); let last = '', lastAt = 0;
-      await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, text => {
-        const now = Date.now();
-        if (busy || (text === last && now - lastAt < 4000)) return;
-        last = text; lastAt = now; check(tokenOf(text));
-      }, () => {});
-      camBtn.textContent = 'Stop camera';
-    } catch (e) { scanner = null; show('bad', '✖', 'Camera failed. Allow camera access in the browser.'); }
-  } }, 'Start camera to scan next');
-  const q = h('input', { placeholder: 'Phone (at least 4 digits) or name', autocomplete: 'off', onkeydown: e => { if (e.key === 'Enter') find(); } });
-  const found = h('div', {});
-  async function find() {
-    const t = q.value.trim();
-    if (t.length < 3) return show('bad', '✖', 'Enter at least 4 phone digits, or 3 letters of the name');
-    found.textContent = 'Searching...';
-    try {
-      const r = await api(Object.assign({ action: 'find', query: t }, auth()));
-      found.replaceChildren();
-      if (!r.ok) { found.textContent = tr(r.msg) || 'An error occurred'; return; }
-      if (!r.list.length) { found.textContent = 'No confirmed ticket matches'; return; }
-      r.list.forEach(x => {
-        const it = h('div', { class: 'found' }, h('b', {}, x.name), h('div', { class: 'mut' }, dEn(x.dayLabel) + ' - ' + (x.bus ? 'Bus rider' : 'No bus') + ' - phone ends with ' + x.phoneEnd));
-        if (!x.bus) it.append(h('div', { class: 'err' }, 'Not registered for the bus'));
-        else if (x.day !== st.day) it.append(h('div', { class: 'err' }, 'Ticket is for ' + dEn(x.dayLabel)));
-        else it.append(h('button', { onclick: () => call({ action: 'busEnter', id: x.id }, 'Connection failed. Check the internet and try again (do not assume the boarding was recorded).') }, 'Board bus ' + st.no));
-        found.append(it);
-      });
-    } catch (e) { found.textContent = 'Connection failed. Check the internet and try again.'; }
-  }
-  const missBtn = h('button', { class: 'alt', onclick: async () => {
-    missBtn.disabled = true; missingBox.textContent = 'Loading...';
-    try {
-      const d = await adm('adminBusReport', { day: st.day, dir: st.dir });
-      const tel = m => h('a', { class: 'b', href: 'tel:' + String(m.phone).replace(/\s/g, ''), style: 'padding:5px 10px;margin:0 4px 0 0' }, 'Call');
-      const wa = m => m.wa ? h('a', { class: 'b wa', href: 'https://wa.me/' + m.wa, target: '_blank', rel: 'noopener', style: 'padding:5px 10px;margin:0' }, 'WhatsApp') : null;
-      missingBox.replaceChildren(h('p', { class: 'mut' }, d.missing.length + ' not boarded yet (of ' + d.expected + ')'),
-        h('div', { class: 'tw', style: 'max-height:420px;overflow:auto' }, h('table', { class: 'tbl' },
-          h('thead', {}, h('tr', {}, ...['#', 'Name', 'Phone', 'Group', ''].map(x => h('th', {}, x)))),
-          h('tbody', {}, ...d.missing.map(m => h('tr', {}, h('td', { class: 'mut' }, String(m.id)), h('td', {}, h('b', {}, m.name)),
-            h('td', { style: 'direction:ltr;white-space:nowrap' }, m.phone), h('td', {}, m.group || '-'), h('td', { style: 'white-space:nowrap' }, tel(m), wa(m))))))));
-    } catch (e) { missingBox.textContent = errMsg(e); }
-    missBtn.disabled = false;
-  } }, "Who hasn't boarded yet?");
-  v.replaceChildren(res,
-    h('div', { class: 'box' }, h('div', { class: 'row' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day), h('div', {}, h('label', { style: 'margin-top:0' }, 'Trip'), dir)),
-      grid, summary, camBtn, h('div', { id: 'reader' }),
-      h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal' }, prev, 'Preview mode (do not record boarding)')),
-    h('div', { class: 'box' }, h('label', { style: 'margin-top:0' }, "If the code doesn't work: search by phone or name"), q, h('button', { class: 'alt', onclick: find }, 'Search'), found),
-    ...(S.role === 'admin' ? [h('div', { class: 'box' }, missBtn, missingBox)] : []));
-  draw(); refresh();
-}
-
-// ---------- التشغيل ----------
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
-(async () => {
-  const role = ls.get('role'), cred = ls.get('cred');
-  if (role && cred) {
-    $('#app').replaceChildren(h('p', { class: 'mut', style: 'text-align:center;margin-top:40vh' }, 'Signing in...'));
-    try { await login(role, cred); return; } catch (e) {
-      loginView(/(password|key)/i.test(errMsg(e)) ? errMsg(e) : 'Connection failed. Check the internet and try again.'); return;
+    const wa = n ? waUrl_(members[0], next) : '';
+    let msg = skipped ? 'تم ' + n + ' وتم تخطى ' + skipped + ' لاكتمال العدد' : '';
+    if (n && CFG.SEND_EMAIL) {
+      try { if (action === 'approveId') sendPayMail_(members[0]); else sendTicket_(members[0]); }
+      catch (e) { msg += ' (الإيميل لم يُرسل: ' + e.message + ')'; }
     }
+    return { ok: true, n: n, skipped: skipped, wa: wa, msg: msg };
+  });
+}
+
+// ---------- الأدمن ----------
+function auth_(pw) { if (pw !== CFG.ADMIN_PASSWORD) throw new Error('الباسورد غلط'); }
+function adminList(pw, filter, q, page, day) {   // بحث + فلتر + صفحات (50 فى الصفحة)
+  auth_(pw);
+  const rows = all_(), stats = {};
+  const gm = {};
+  rows.forEach(r => { if (r.gid) { const g = gm[r.gid] || (gm[r.gid] = { n: 0, review: 0, pending: 0 }); g.n++; if (g[r.status] !== undefined) g[r.status]++; } });
+  const counts = { review: 0, pending: 0, approved: 0, rejected: 0, entered: 0, all: rows.length };
+  rows.forEach(r => { if (counts[r.status] !== undefined) counts[r.status]++; if (r.used_at) counts.entered++; });
+  Object.keys(CFG.DAYS).forEach(d => {
+    stats[CFG.DAYS[d] + ' مؤكد'] = rows.filter(r => r.day === d && r.status === 'approved').length;
+    stats[CFG.DAYS[d] + ' دخلوا'] = rows.filter(r => r.day === d && r.used_at).length;
+  });
+  let list = rows.filter(r => filter === 'all' || (filter === 'entered' ? !!r.used_at : r.status === filter));
+  if (CFG.DAYS[day]) list = list.filter(r => r.day === day);
+  q = String(q || '').trim().toLowerCase();
+  if (q) {
+    const qd = q.replace(/\D/g, '').replace(/^0+/, '');
+    list = list.filter(r => String(r.name).toLowerCase().indexOf(q) > -1 || (qd && String(r.phone).replace(/\D/g, '').indexOf(qd) > -1));
   }
-  loginView(S.urlToken ? 'Sign in with the scanner key and the code will be checked automatically' : '');
-})();
-</script></body></html>
+  list.sort((a, b) => filter === 'entered' ? Number(b.used_at) - Number(a.used_at) : b.row - a.row);
+  const per = 50, total = list.length, pages = Math.max(1, Math.ceil(total / per));
+  page = Math.min(Math.max(parseInt(page, 10) || 1, 1), pages);
+  const out = list.slice((page - 1) * per, page * per).map(r => ({ id: r.id, name: r.name, day: CFG.DAYS[r.day], txref: r.txref, status: r.status,
+    hasId: !!r.idfile, hasPay: !!r.payfile, bus: r.bus === 'yes', gid: r.gid || '', gname: r.group || '', gn: r.gid ? gm[r.gid].n : 0, gr: r.gid ? gm[r.gid].review : 0, gp: r.gid ? gm[r.gid].pending : 0, usedAt: r.used_at ? Number(r.used_at) : 0, wa: waUrl_(r, r.status) }));
+  return { rows: out, stats: stats, counts: counts, email: CFG.SEND_EMAIL, total: total, page: page, pages: pages };
+}
+function adminAct(pw, id, action) {
+  auth_(pw);
+  return withLock_(() => {
+    const r = all_().filter(x => String(x.id) === String(id))[0];
+    if (!r) throw new Error('غير موجود');
+    if (action === 'reject') { if (r.used_at) throw new Error('التذكرة مستخدمة'); set_(r.row, 'status', 'rejected'); return { ok: true }; }
+    if (action === 'approveId' || action === 'approve') {
+      if (r.status !== (action === 'approveId' ? 'review' : 'pending')) throw new Error('الطلب مش فى المرحلة دى');
+      if (!held_(r) && taken_(all_(), r.day) >= CFG.CAPACITY) throw new Error('اليوم اكتمل العدد');
+      set_(r.row, 'status', action === 'approveId' ? 'pending' : 'approved');
+      if (action === 'approveId') set_(r.row, 'idok_at', new Date());
+    } else if (action === 'resend') {
+      if (r.status !== 'approved' && r.status !== 'pending') throw new Error('مفيش إيميل لإعادة إرساله');
+    } else throw new Error('أمر غير معروف');
+    const newStatus = action === 'approveId' ? 'pending' : action === 'approve' ? 'approved' : r.status;
+    const wa = waUrl_(r, newStatus);
+    if (!CFG.SEND_EMAIL) return { ok: true, wa: wa };
+    const payStage = action === 'approveId' || (action === 'resend' && r.status === 'pending');
+    try { if (payStage) sendPayMail_(r); else sendTicket_(r); return { ok: true, mailed: true, wa: wa }; }
+    catch (e) { return { ok: true, mailed: false, wa: wa, msg: 'تم التأكيد لكن الإيميل لم يُرسل (' + e.message + '). استخدم زرار واتساب أو "إعادة إرسال" لاحقاً.' }; }
+  });
+}
+function idOf_(v) { return String(v).match(/[-\w]{25,}/)[0]; }   // يطلّع ID الملف من اللينك أو من الـ ID القديم
+function fixSheet() {   // شغّلها مرة واحدة من المحرر لتصحيح الصفوف القديمة
+  const s = sheet_(), n = s.getLastRow() - 1;
+  if (n < 1) return;
+  s.getRange('J:K').setNumberFormat('yyyy-mm-dd hh:mm');
+  ['used_at', 'created'].forEach(col => {
+    const rng = s.getRange(2, H.indexOf(col) + 1, n, 1), v = rng.getValues();
+    rng.setValues(v.map(x => [typeof x[0] === 'number' && x[0] > 1e11 ? new Date(x[0]) : x[0]]));
+  });
+  const rng = s.getRange(2, H.indexOf('idfile') + 1, n, 1), v = rng.getValues();
+  rng.setValues(v.map(x => [x[0] && !/^http/.test(x[0]) ? 'https://drive.google.com/file/d/' + x[0] + '/view' : x[0]]));
+}
+function fixGroupColumns() {   // شغّلها مرة واحدة من المحرر لو عندك صفوف مجموعات قديمة (المفتاح كان فى عمود group)
+  const s = sheet_(), n = s.getLastRow() - 1;
+  if (n < 1) return;
+  const gi = H.indexOf('group') + 1, ki = H.indexOf('gid') + 1;
+  const g = s.getRange(2, gi, n, 1), k = s.getRange(2, ki, n, 1), gv = g.getValues(), kv = k.getValues();
+  for (let i = 0; i < n; i++) if (/^[0-9a-f]{32}$/.test(String(gv[i][0])) && !kv[i][0]) { kv[i][0] = gv[i][0]; gv[i][0] = 'مجموعة بدون اسم'; }
+  g.setValues(gv); k.setValues(kv);
+}
+function saveId_(dataUrl, token) {
+  const it = DriveApp.getFoldersByName('Event IDs (private)');
+  const folder = it.hasNext() ? it.next() : DriveApp.createFolder('Event IDs (private)');
+  const bytes = Utilities.base64Decode(dataUrl.split(',')[1]);
+  return folder.createFile(Utilities.newBlob(bytes, 'image/jpeg', token.slice(0, 12) + '.jpg')).getUrl();   // لينك مباشر للصورة
+}
+function savePay_(bytes, token) {
+  const it = DriveApp.getFoldersByName('Event Payments (private)');
+  const folder = it.hasNext() ? it.next() : DriveApp.createFolder('Event Payments (private)');
+  return folder.createFile(Utilities.newBlob(bytes, 'image/jpeg', 'pay_' + token.slice(0, 12) + '_' + Date.now() + '.jpg')).getUrl();
+}
+function adminGetPay(pw, id) {
+  auth_(pw);
+  const r = all_().filter(x => String(x.id) === String(id))[0];
+  if (!r || !r.payfile) throw new Error('لا توجد صورة تحويل');
+  return 'data:image/jpeg;base64,' + Utilities.base64Encode(DriveApp.getFileById(idOf_(r.payfile)).getBlob().getBytes());
+}
+function adminGetId(pw, id) {
+  auth_(pw);
+  const r = all_().filter(x => String(x.id) === String(id))[0];
+  if (!r || !r.idfile) throw new Error('لا توجد صورة');
+  return 'data:image/jpeg;base64,' + Utilities.base64Encode(DriveApp.getFileById(idOf_(r.idfile)).getBlob().getBytes());
+}
+function sendPayMail_(r) {   // إيميل قبول البطاقة + رابط الدفع
+  if (MailApp.getRemainingDailyQuota() < 1) throw new Error('انتهى حد الإيميلات اليومى');
+  const link = linkOf_(r);
+  MailApp.sendEmail({ to: r.email, name: CFG.EVENT_NAME, subject: 'تم قبول طلبك - كمّل الدفع - ' + CFG.EVENT_NAME,
+    htmlBody: '<div dir="rtl"><p>أهلاً ' + esc_(r.name) + '،</p><p>تمت مراجعة بطاقتك وتم قبول طلبك لحضور <b>' + esc_(CFG.EVENT_NAME) +
+      '</b> يوم <b>' + CFG.DAYS[r.day] + '</b>.</p><p>كمّل الدفع من الرابط ده، وارفع صورة التحويل بعد ما تحوّل خلال ' + CFG.PAY_HOLD_H +
+      ' ساعة عشان مكانك يفضل محجوز:</p><p><a href="' + link + '">' + link + '</a></p></div>' });
+}
+function sendTicket_(r) {
+  if (MailApp.getRemainingDailyQuota() < 1) throw new Error('انتهى حد الإيميلات اليومى');
+  const link = linkOf_(r);
+  const opts = { to: r.email, name: CFG.EVENT_NAME, subject: 'تذكرتك - ' + CFG.EVENT_NAME, htmlBody: '' };
+  let img = '';
+  try {
+    // الـ QR بيحتوى رابط الـ scanner (?s=التوكن)
+    const blob = UrlFetchApp.fetch('https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=M&data=' + encodeURIComponent(scanUrl_(r.token))).getBlob().setName('qr.png');
+    opts.inlineImages = { qr: blob }; img = '<p><img src="cid:qr" width="260"></p>';
+  } catch (e) {}
+  opts.htmlBody = '<div dir="rtl"><p>أهلاً ' + esc_(r.name) + '،</p><p>تم تأكيد دفعك لحضور <b>' + esc_(CFG.EVENT_NAME) +
+    '</b> يوم <b>' + CFG.DAYS[r.day] + '</b>. اعرض الكود عند الدخول (مرة واحدة):</p>' + img +
+    '<p>تذكرتك أونلاين: <a href="' + link + '">' + link + '</a></p></div>';
+  MailApp.sendEmail(opts);
+}
+
+// ---------- الباصات: تسجيل الركوب (ذهاب وعودة) فى شيت "Bus" لوحده ----------
+// بيستخدم نفس الـ QR بتاع التذكرة، لكن مبيلمسش used_at بتاع الباب، فالكود يتمسح للباص مرتين (ذهاب وعودة) وللباب مرة.
+const BUS_H = ['reg_id', 'token', 'name', 'day', 'dir', 'bus', 'time'];
+function repeatsSheet_() {   // سجل محاولات مسح كود مستخدم عند الباب
+  const ss = SpreadsheetApp.getActive();
+  let s = ss.getSheetByName('Repeats');
+  if (!s) {
+    s = ss.insertSheet('Repeats'); s.appendRow(['reg_id', 'name', 'day', 'first_entry', 'repeat_at']); s.setFrozenRows(1);
+    try { s.getRange('D:E').setNumberFormat('yyyy-mm-dd hh:mm:ss'); } catch (e) {}
+  }
+  return s;
+}
+function busSheet_() {
+  const ss = SpreadsheetApp.getActive();
+  let s = ss.getSheetByName('Bus');
+  if (!s) {
+    s = ss.insertSheet('Bus'); s.appendRow(BUS_H); s.setFrozenRows(1);
+    try { s.getRange('B:B').setNumberFormat('@'); s.getRange('G:G').setNumberFormat('yyyy-mm-dd hh:mm:ss'); } catch (e) {}
+  }
+  return s;
+}
+function busAll_() {
+  const v = busSheet_().getDataRange().getValues();
+  return v.slice(1).filter(r => r[0] !== '' && r[0] !== 'reg_id').map(r => ({ id: r[0], token: r[1], name: r[2], day: r[3], dir: r[4], bus: Number(r[5]), time: r[6] }));
+}
+function busCheck_(day, dir, bus) {
+  if (!CFG.DAYS[day]) throw new Error('اليوم غير صحيح');
+  if (dir !== 'out' && dir !== 'back') throw new Error('اتجاه غير صحيح');
+  if (!(bus >= 1 && bus <= CFG.BUSES && bus % 1 === 0)) throw new Error('اختار رقم الباص');
+}
+function regByToken_(token) {   // بحث سريع بالتوكن فى عمود B من غير ما نقرا الشيت كله
+  token = String(token || '');
+  if (!/^[0-9A-Za-z]{20,}$/.test(token)) return null;
+  try {
+    const s = sheet_();
+    const f = s.getRange('B:B').createTextFinder(token).matchEntireCell(true).matchCase(true).findNext();
+    if (!f) return null;
+    const v = s.getRange(f.getRow(), 1, 1, H.length).getValues()[0], o = { row: f.getRow() };
+    H.forEach((h, j) => o[h] = v[j]);
+    return String(o.token) === token ? o : null;
+  } catch (e) { return all_().filter(x => x.token === token)[0] || null; }
+}
+function busBoard_(r, day, dir, bus, preview) {
+  if (!r || r.status !== 'approved') return { ok: false, msg: 'كود غير صالح' };
+  if (r.bus !== 'yes') return { ok: false, msg: 'مش مسجل باص: ' + r.name, name: r.name };
+  if (r.day !== day) return { ok: false, msg: 'الكود ليوم ' + CFG.DAYS[r.day], name: r.name };
+  const recs = busAll_();
+  const prev = recs.filter(x => String(x.id) === String(r.id) && x.dir === dir)[0];
+  const cnt = recs.filter(x => x.day === day && x.dir === dir && x.bus === bus).length;
+  // الكود مفتوح: لو اتمسح قبل كده فى نفس الرحلة مبنرفضوش، بنظهر تنبيه (ومبنسجّلوش تانى عشان العدّاد ميزيدش)
+  if (prev) return { ok: true, warn: true, msg: 'تنبيه: ركب قبل كده فى الباص ' + prev.bus + ' (' + new Date(prev.time).toLocaleTimeString('ar-EG') + ')', name: r.name, count: cnt };
+  if (cnt >= CFG.BUS_CAPACITY) return { ok: false, msg: 'الباص ' + bus + ' اتملى (' + cnt + '/' + CFG.BUS_CAPACITY + ')', name: r.name, count: cnt };
+  if (preview) return { ok: true, msg: 'صالح للباص (معاينة، لم يُسجَّل): ' + r.name, name: r.name, count: cnt };
+  busSheet_().appendRow([r.id, r.token, r.name, day, dir, bus, new Date()]);
+  return { ok: true, msg: 'ركب الباص ' + bus + ' (' + (cnt + 1) + '/' + CFG.BUS_CAPACITY + '): ' + r.name, name: r.name, count: cnt + 1 };
+}
+function busScan_(code, day, dir, bus, preview) {
+  busCheck_(day, dir, bus);
+  return withLock_(() => busBoard_(regByToken_(tokenOf_(code)), day, dir, bus, preview));
+}
+function busEnter_(id, day, dir, bus, preview) {   // تسجيل يدوى (لو الـ QR مش شغال)
+  busCheck_(day, dir, bus);
+  return withLock_(() => busBoard_(all_().filter(x => String(x.id) === String(id))[0], day, dir, bus, preview));
+}
+function busExpected_(day) {   // عدد ركاب الباص المؤكدين لليوم (كاش 60 ثانية عشان القراية الكبيرة)
+  const key = 'busExp_' + day;
+  try { const c = CacheService.getScriptCache().get(key); if (c !== null) return Number(c); } catch (e) {}
+  const n = all_().filter(r => r.status === 'approved' && r.bus === 'yes' && r.day === day).length;
+  try { CacheService.getScriptCache().put(key, String(n), 60); } catch (e) {}
+  return n;
+}
+function busStats_(day, dir) {
+  busCheck_(day, dir, 1);
+  const recs = busAll_().filter(x => x.day === day && x.dir === dir), counts = [];
+  for (let i = 1; i <= CFG.BUSES; i++) counts.push(recs.filter(x => x.bus === i).length);
+  return { counts: counts, boarded: recs.length, expected: busExpected_(day), cap: CFG.BUS_CAPACITY, buses: CFG.BUSES };
+}
+function adminBusReport(pw, day, dir) {   // مين لسه ما ركبش
+  auth_(pw); busCheck_(day, dir, 1);
+  const st = busStats_(day, dir), done = {};
+  busAll_().filter(x => x.day === day && x.dir === dir).forEach(x => done[String(x.id)] = 1);
+  const missing = all_().filter(r => r.status === 'approved' && r.bus === 'yes' && r.day === day && !done[String(r.id)])
+    .map(r => ({ id: r.id, name: r.name, phone: String(r.phone), wa: waPhone_(r.phone), phoneEnd: String(r.phone).replace(/\D/g, '').slice(-4), group: r.group || '' }));
+  st.expected = st.boarded + missing.length; st.missing = missing;
+  return st;
+}
+
+// ---------- الـ Scanner ----------
+// الطريقة الأساسية: الأمن يمسح الـ QR بكاميرا الموبايل العادية، فيفتح الرابط (?s=التوكن) وصفحة Index بتنادى scanLink.
+function scanLink(key, code, day, preview) {
+  if (!keyOk_(key)) throw new Error('مفتاح غير صحيح');
+  if (!CFG.DAYS[day]) throw new Error('اختار اليوم');
+  return scan_(tokenOf_(code), day, !!preview);
+}
+// تطبيق الأدمن/الأمن على GitHub Pages: كل الطلبات بتيجى هنا (POST)
+function doPost(e) {
+  let out;
+  try {
+    const d = JSON.parse(e.postData.contents), a = String(d.action || '');
+    if (a.indexOf('admin') === 0) out = { ok: true, data: adminApi_(d) };
+    else if (!(keyOk_(d.key) || (d.pw && d.pw === CFG.ADMIN_PASSWORD))) out = { ok: false, msg: 'مفتاح غير صحيح' };   // الأدمن يقدر يسكان كمان
+    else if (a === 'find') out = { ok: true, list: scanFind_(d.query) };
+    else if (!CFG.DAYS[d.day]) out = { ok: false, msg: 'اليوم غير صحيح' };
+    else if (a === 'enter') out = scanEnterId_(d.id, d.day, !!d.preview);
+    else if (a === 'busScan') out = busScan_(d.code, d.day, d.dir, Number(d.bus), !!d.preview);
+    else if (a === 'busEnter') out = busEnter_(d.id, d.day, d.dir, Number(d.bus), !!d.preview);
+    else if (a === 'busStats') out = { ok: true, data: busStats_(d.day, d.dir) };
+    else out = scan_(tokenOf_(d.code), d.day, !!d.preview);
+  } catch (err) { out = { ok: false, msg: String((err && err.message) || 'خطأ فى الطلب') }; }
+  return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
+}
+function adminApi_(d) {
+  switch (d.action) {
+    case 'adminLogin': auth_(d.pw); return true;
+    case 'adminList': return adminList(d.pw, d.filter, d.q, d.page, d.day);
+    case 'adminAct': return adminAct(d.pw, d.id, d.act);
+    case 'adminActGroup': return adminActGroup(d.pw, d.gid, d.act);
+    case 'adminGetId': return adminGetId(d.pw, d.id);
+    case 'adminGetPay': return adminGetPay(d.pw, d.id);
+    case 'adminStats': return adminStats(d.pw);
+    case 'adminBusReport': return adminBusReport(d.pw, d.day, d.dir);
+  }
+  throw new Error('أمر غير معروف');
+}
+function adminStats(pw) {   // أرقام الصفحة الرئيسية
+  auth_(pw);
+  const rows = all_(), days = {}, status = { review: 0, pending: 0, approved: 0, rejected: 0 };
+  rows.forEach(r => { if (status[r.status] !== undefined) status[r.status]++; });
+  Object.keys(CFG.DAYS).forEach(k => {
+    days[k] = { label: CFG.DAYS[k], capacity: CFG.CAPACITY,
+      approved: rows.filter(r => r.day === k && r.status === 'approved').length,
+      bus: rows.filter(r => r.day === k && r.status === 'approved' && r.bus === 'yes').length,
+      entered: rows.filter(r => r.day === k && r.used_at).length };
+  });
+  const recent = rows.filter(r => r.used_at).sort((x, y) => Number(y.used_at) - Number(x.used_at)).slice(0, 10)
+    .map(r => ({ name: r.name, day: CFG.DAYS[r.day], at: Number(r.used_at) }));
+  let repeats = [];
+  try {
+    const rs = SpreadsheetApp.getActive().getSheetByName('Repeats');
+    if (rs) repeats = rs.getDataRange().getValues().slice(1).filter(x => x[0] !== '' && x[0] !== 'reg_id').slice(-10).reverse()
+      .map(x => ({ name: x[1], day: CFG.DAYS[x[2]] || x[2], first: Number(x[3]), at: Number(x[4]) }));
+  } catch (e) {}
+  return { days: days, status: status, total: rows.length, recent: recent, repeats: repeats };
+}
+function scan_(code, day, preview) {
+  return withLock_(() => {
+    const r = all_().filter(x => x.token === code)[0];
+    if (!r || r.status !== 'approved') return { ok: false, msg: 'كود غير صالح' };
+    if (r.day !== day) return { ok: false, msg: 'الكود ليوم ' + CFG.DAYS[r.day], name: r.name };
+    if (r.used_at) {   // الكود اتمسح قبل كده: بنقول مين اللى دخل بيه ومتى، وبنسجّل المحاولة فى شيت Repeats
+      if (!preview) { try { repeatsSheet_().appendRow([r.id, r.name, r.day, r.used_at, new Date()]); } catch (e) {} }
+      return { ok: false, msg: 'الكود مستخدم قبل كده: ' + r.name + ' (' + new Date(Number(r.used_at)).toLocaleTimeString('ar-EG') + ')', name: r.name };
+    }
+    if (preview) return { ok: true, msg: 'صالح (معاينة، لم يُسجَّل الدخول): ' + r.name, name: r.name };
+    set_(r.row, 'used_at', new Date());
+    return { ok: true, msg: 'مسموح بالدخول: ' + r.name, name: r.name };
+  });
+}
+
+// بحث عن تذاكر مؤكدة بآخر أرقام الموبايل (4 على الأقل) أو بجزء من الاسم (3 حروف على الأقل)
+function scanFind_(q) {
+  q = norm_(q);
+  const digits = q.replace(/\D/g, '');
+  let rows = all_().filter(r => r.status === 'approved');
+  if (digits.length >= 4) {
+    const d = digits.replace(/^0+/, '');
+    if (!d) return [];
+    rows = rows.filter(r => String(r.phone).replace(/\D/g, '').indexOf(d) > -1);
+  } else if (!/\d/.test(q) && q.length >= 3) {
+    const t = q.toLowerCase();
+    rows = rows.filter(r => String(r.name).toLowerCase().indexOf(t) > -1);
+  } else return [];
+  return rows.slice(0, 10).map(r => ({
+    id: r.id, name: r.name, day: r.day, dayLabel: CFG.DAYS[r.day],
+    phoneEnd: String(r.phone).replace(/\D/g, '').slice(-4),
+    bus: r.bus === 'yes', used: !!r.used_at, usedAt: r.used_at ? Number(r.used_at) : 0
+  }));
+}
+
+// تسجيل دخول يدوى برقم الطلب (نفس شروط الـ QR: مؤكد، اليوم صح، ماتستخدمش قبل كده)
+function scanEnterId_(id, day, preview) {
+  return withLock_(() => {
+    const r = all_().filter(x => String(x.id) === String(id))[0];
+    if (!r || r.status !== 'approved') return { ok: false, msg: 'تذكرة غير صالحة' };
+    if (r.day !== day) return { ok: false, msg: 'التذكرة ليوم ' + CFG.DAYS[r.day], name: r.name };
+    if (r.used_at) return { ok: false, msg: 'دخل قبل كده (' + new Date(Number(r.used_at)).toLocaleTimeString('ar-EG') + ')', name: r.name };
+    if (preview) return { ok: true, msg: 'صالح (معاينة، لم يُسجَّل الدخول): ' + r.name, name: r.name };
+    set_(r.row, 'used_at', new Date());
+    return { ok: true, msg: 'مسموح بالدخول: ' + r.name, name: r.name };
+  });
+}
