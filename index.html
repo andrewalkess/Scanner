@@ -240,7 +240,7 @@ function ordersView() {
   const fd = h('select', { onchange: () => { F.day = fd.value; F.page = 1; load(); } }, opt('', 'All days'), opt('Friday', 'Friday'), opt('Saturday', 'Saturday'));
   fd.value = F.day;
   const list = h('tbody', {}), info = h('span', { class: 'mut' });
-  const table = h('table', { class: 'tbl' }, h('thead', {}, h('tr', {}, ...['#', 'Name', 'Day', 'Bus', 'Group', 'Receipt', 'Status', 'Actions'].map(x => h('th', {}, x)))), list);
+  const table = h('table', { class: 'tbl' }, h('thead', {}, h('tr', {}, ...['#', 'Serial', 'Name', 'Day', 'Bus', 'Group', 'Receipt', 'Status', 'Actions'].map(x => h('th', {}, x)))), list);
   const prevB = h('button', { class: 'ghost', onclick: () => { F.page--; load(); } }, 'Previous');
   const nextB = h('button', { class: 'ghost', onclick: () => { F.page++; load(); } }, 'Next');
   v.replaceChildren(h('div', { class: 'row' }, q, fs, fd), h('div', { style: 'height:12px' }), h('div', { class: 'tw' }, table), h('div', { class: 'pg' }, prevB, info, nextB));
@@ -280,7 +280,7 @@ function ordersView() {
     if (r.status === 'review') { act('approveId', 'Approve + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gr > 1) actGroup('approveId', 'Approve all ' + r.gr + ' cards in group', 'ghost'); }
     else if (r.status === 'pending') { wa('WhatsApp (payment link)'); act('approve', 'Confirm payment + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gp > 1) actGroup('approve', 'Confirm payment for all ' + r.gp + ' in group', 'ghost'); }
     else if (r.status === 'approved') { wa('WhatsApp (ticket)'); }
-    return h('tr', {}, h('td', { class: 'mut' }, String(r.id)), h('td', {}, h('b', {}, r.name)), h('td', {}, dEn(r.day)),
+    return h('tr', {}, h('td', { class: 'mut' }, String(r.id)), h('td', {}, r.serial ? h('b', {}, String(r.serial)) : '-'), h('td', {}, h('b', {}, r.name)), h('td', {}, dEn(r.day)),
       h('td', {}, r.bus ? 'Bus' : '-'), h('td', {}, r.gid ? h('b', {}, r.gname || 'Group') : '-', r.gid ? h('div', { class: 'mut', style: 'font-size:.75rem' }, r.gn + ' people') : null),
       h('td', {}, r.hasPay ? 'Uploaded' : (r.txref || '-')),
       h('td', {}, h('span', { class: 'st st-' + r.status }, ST[r.status] || r.status),
@@ -295,7 +295,7 @@ function ordersView() {
       [...fs.options].forEach(o => { o.textContent = LBL[o.value] + ' (' + (d.counts[o.value] || 0) + ')'; });
       info.textContent = 'Page ' + d.page + ' of ' + d.pages + ' (' + d.total + ' requests)';
       prevB.disabled = d.page <= 1; nextB.disabled = d.page >= d.pages;
-      list.replaceChildren(...(d.rows.length ? d.rows.map(card) : [h('tr', {}, h('td', { colspan: '8', class: 'mut' }, 'No results'))]));
+      list.replaceChildren(...(d.rows.length ? d.rows.map(card) : [h('tr', {}, h('td', { colspan: '9', class: 'mut' }, 'No results'))]));
     } catch (e) { toast(errMsg(e)); }
     list.style.opacity = 1;
   }
@@ -348,11 +348,11 @@ function scanView() {
       camBtn.textContent = 'Stop camera';
     } catch (e) { scanner = null; show('bad', '✖', 'Camera failed. Allow camera access in the browser.'); }
   } }, 'Start camera to scan next');
-  const q = h('input', { placeholder: 'Phone (at least 4 digits) or name', autocomplete: 'off', onkeydown: e => { if (e.key === 'Enter') find(); } });
+  const q = h('input', { placeholder: 'Ticket number, phone (4+ digits) or name', autocomplete: 'off', onkeydown: e => { if (e.key === 'Enter') find(); } });
   const found = h('div', {});
   async function find() {
     const t = q.value.trim(); save();
-    if (t.length < 3) return show('bad', '✖', 'Enter at least 4 phone digits, or 3 letters of the name');
+    if (t.length < 3 && !/^\d{1,3}$/.test(t)) return show('bad', '✖', 'Enter the ticket number, at least 4 phone digits, or 3 letters of the name');
     found.textContent = 'Searching...';
     try {
       const r = await api(Object.assign({ action: 'find', query: t }, auth()));
@@ -360,7 +360,7 @@ function scanView() {
       if (!r.ok) { found.textContent = tr(r.msg) || 'An error occurred'; return; }
       if (!r.list.length) { found.textContent = 'No confirmed ticket matches'; return; }
       r.list.forEach(x => {
-        const it = h('div', { class: 'found' }, h('b', {}, x.name), h('div', { class: 'mut' }, dEn(x.dayLabel) + ' - phone ends with ' + x.phoneEnd));
+        const it = h('div', { class: 'found' }, h('b', {}, x.name), h('div', { class: 'mut' }, (x.serial ? '#' + x.serial + ' - ' : '') + dEn(x.dayLabel) + ' - phone ends with ' + x.phoneEnd));
         if (x.used) it.append(h('div', { class: 'err' }, 'Already checked in (' + new Date(x.usedAt).toLocaleTimeString('en-GB') + ')'));
         else if (x.day !== S.day) it.append(h('div', { class: 'err' }, 'Ticket is for ' + dEn(x.dayLabel)));
         else it.append(h('button', { onclick: () => enterById(x.id) }, 'Check in'));
@@ -434,11 +434,11 @@ function busView() {
       camBtn.textContent = 'Stop camera';
     } catch (e) { scanner = null; show('bad', '✖', 'Camera failed. Allow camera access in the browser.'); }
   } }, 'Start camera to scan next');
-  const q = h('input', { placeholder: 'Phone (at least 4 digits) or name', autocomplete: 'off', onkeydown: e => { if (e.key === 'Enter') find(); } });
+  const q = h('input', { placeholder: 'Ticket number, phone (4+ digits) or name', autocomplete: 'off', onkeydown: e => { if (e.key === 'Enter') find(); } });
   const found = h('div', {});
   async function find() {
     const t = q.value.trim();
-    if (t.length < 3) return show('bad', '✖', 'Enter at least 4 phone digits, or 3 letters of the name');
+    if (t.length < 3 && !/^\d{1,3}$/.test(t)) return show('bad', '✖', 'Enter the ticket number, at least 4 phone digits, or 3 letters of the name');
     found.textContent = 'Searching...';
     try {
       const r = await api(Object.assign({ action: 'find', query: t }, auth()));
@@ -446,7 +446,7 @@ function busView() {
       if (!r.ok) { found.textContent = tr(r.msg) || 'An error occurred'; return; }
       if (!r.list.length) { found.textContent = 'No confirmed ticket matches'; return; }
       r.list.forEach(x => {
-        const it = h('div', { class: 'found' }, h('b', {}, x.name), h('div', { class: 'mut' }, dEn(x.dayLabel) + ' - ' + (x.bus ? 'Bus rider' : 'No bus') + ' - phone ends with ' + x.phoneEnd));
+        const it = h('div', { class: 'found' }, h('b', {}, x.name), h('div', { class: 'mut' }, (x.serial ? '#' + x.serial + ' - ' : '') + dEn(x.dayLabel) + ' - ' + (x.bus ? 'Bus rider' : 'No bus') + ' - phone ends with ' + x.phoneEnd));
         if (!x.bus) it.append(h('div', { class: 'err' }, 'Not registered for the bus'));
         else if (x.day !== st.day) it.append(h('div', { class: 'err' }, 'Ticket is for ' + dEn(x.dayLabel)));
         else it.append(h('button', { onclick: () => call({ action: 'busEnter', id: x.id }, 'Connection failed. Check the internet and try again (do not assume the boarding was recorded).') }, 'Board bus ' + st.no));
