@@ -462,8 +462,8 @@ function busView() {
       const wa = m => m.wa ? h('a', { class: 'b wa', href: 'https://wa.me/' + m.wa, target: '_blank', rel: 'noopener', style: 'padding:5px 10px;margin:0' }, 'WhatsApp') : null;
       missingBox.replaceChildren(h('p', { class: 'mut' }, d.missing.length + ' not boarded yet (of ' + d.expected + ')'),
         h('div', { class: 'tw', style: 'max-height:420px;overflow:auto' }, h('table', { class: 'tbl' },
-          h('thead', {}, h('tr', {}, ...['#', 'Name', 'Phone', 'Group', ''].map(x => h('th', {}, x)))),
-          h('tbody', {}, ...d.missing.map(m => h('tr', {}, h('td', { class: 'mut' }, String(m.id)), h('td', {}, h('b', {}, m.name)),
+          h('thead', {}, h('tr', {}, ...['Serial', 'Name', 'Phone', 'Group', ''].map(x => h('th', {}, x)))),
+          h('tbody', {}, ...d.missing.map(m => h('tr', {}, h('td', {}, m.serial ? h('b', {}, String(m.serial)) : '-'), h('td', {}, h('b', {}, m.name)),
             h('td', { style: 'direction:ltr;white-space:nowrap' }, m.phone), h('td', {}, m.group || '-'), h('td', { style: 'white-space:nowrap' }, tel(m), wa(m))))))));
     } catch (e) { missingBox.textContent = errMsg(e); }
     missBtn.disabled = false;
