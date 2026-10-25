@@ -45,6 +45,7 @@ label{display:block;margin:10px 0 4px;font-weight:bold}
 .tbl .st{white-space:nowrap}
 .tbl .acts{margin:0;gap:4px;justify-content:flex-start}
 .tbl .b{flex:none;min-width:0;padding:6px 10px;font-size:.78rem;border-radius:7px}
+.pay{width:auto;min-width:110px;padding:6px 8px;font-size:.85rem;margin:0}
 .busgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
 .busbtn{margin:0;padding:10px 4px;background:#e8e6e1;color:var(--tx);font-size:.95rem;line-height:1.3}
 .busbtn small{display:block;font-weight:normal;color:var(--mut)}
@@ -104,7 +105,7 @@ const MSG = [
   [/^اختار رقم الباص$/, 'Choose a bus number'], [/^اتجاه غير صحيح$/, 'Invalid direction'],
   [/^مفيش أعضاء فى المرحلة دى$/, 'No group members at this stage'],
   // ---- تصحيح الحالة ----
-  [/^حالة غير معروفة$/, 'Unknown status'], [/^الطلب بالفعل فى الحالة دى$/, 'Already in this status'],
+  [/^حالة غير معروفة$/, 'Unknown status'], [/^طريقة دفع غير معروفة$/, 'Unknown payment method'], [/^الطلب بالفعل فى الحالة دى$/, 'Already in this status'],
   [/^كلهم بالفعل فى الحالة دى$/, 'All members are already in this status'], [/^المجموعة غير موجودة$/, 'Group not found'],
   [/^التذكرة مستخدمة \(دخل الايفنت\): (.*)$/, m => 'Ticket already used (checked in): ' + m[1] + '. Cannot change its status'],
   [/^تم (\d+) وتم تخطى (\d+) \((.*)\)$/, m => 'Done ' + m[1] + ', skipped ' + m[2] + ' (' + tr(m[3]) + ')'],
@@ -272,12 +273,24 @@ function ordersView() {
   const fd = h('select', { onchange: () => { F.day = fd.value; F.page = 1; load(); } }, opt('', 'All days'), opt('Friday', 'Friday'), opt('Saturday', 'Saturday'));
   fd.value = F.day;
   const list = h('tbody', {}), info = h('span', { class: 'mut' });
-  const table = h('table', { class: 'tbl' }, h('thead', {}, h('tr', {}, ...['#', 'Serial', 'Name', 'Day', 'Bus', 'Group', 'Receipt', 'Status', 'Actions'].map(x => h('th', {}, x)))), list);
+  const table = h('table', { class: 'tbl' }, h('thead', {}, h('tr', {}, ...['#', 'Serial', 'Name', 'Day', 'Bus', 'Group', 'Receipt', 'Status', 'Payment', 'Actions'].map(x => h('th', {}, x)))), list);
   const prevB = h('button', { class: 'ghost', onclick: () => { F.page--; load(); } }, 'Previous');
   const nextB = h('button', { class: 'ghost', onclick: () => { F.page++; load(); } }, 'Next');
   v.replaceChildren(h('div', { class: 'row' }, q, fs, fd), h('div', { style: 'height:12px' }), h('div', { class: 'tw' }, table), h('div', { class: 'pg' }, prevB, info, nextB));
 
   async function viewImg(fn, r, title) { try { modal(await adm(fn, { id: r.id }), r.name + ' - ' + title); } catch (e) { toast(errMsg(e)); } }
+  function paySel(r) {   // طريقة الدفع: Bank / Orange Cash (بتتحدد من هنا وبتتسجل فى الشيتات على طول)
+    const sel = h('select', { class: 'pay', onchange: async () => {
+      const m = sel.value, grp = !!(r.gid && r.gn > 1);
+      const all = grp && confirm('Set "' + (m || 'none') + '" for all ' + r.gn + ' people in this group?\n\nOK = whole group\nCancel = only ' + r.name);
+      sel.disabled = true;
+      try { await adm('adminSetPay', { id: r.id, method: m, all: all }); toast('Payment method saved', 2500); }
+      catch (e) { toast(errMsg(e), 5000); }
+      load();
+    } }, h('option', { value: '' }, '-'), h('option', { value: 'Bank' }, 'Bank'), h('option', { value: 'Orange' }, 'Orange Cash'));
+    sel.value = r.pay || '';
+    return sel;
+  }
   function card(r) {
     const acts = h('div', { class: 'acts' });
     const add = (t, fn, cls) => acts.append(h('button', { class: 'b ' + (cls || ''), onclick: fn }, t));
@@ -318,6 +331,7 @@ function ordersView() {
       h('td', {}, r.hasPay ? 'Uploaded' : (r.txref || '-')),
       h('td', {}, h('span', { class: 'st st-' + r.status }, ST[r.status] || r.status),
         r.usedAt ? h('div', { class: 'ok', style: 'font-size:.8rem' }, 'In: ' + new Date(r.usedAt).toLocaleString('en-GB')) : null),
+      h('td', {}, paySel(r)),
       h('td', { class: 'actd' }, acts));
   }
   async function load() {
@@ -328,7 +342,7 @@ function ordersView() {
       [...fs.options].forEach(o => { o.textContent = LBL[o.value] + ' (' + (d.counts[o.value] || 0) + ')'; });
       info.textContent = 'Page ' + d.page + ' of ' + d.pages + ' (' + d.total + ' requests)';
       prevB.disabled = d.page <= 1; nextB.disabled = d.page >= d.pages;
-      list.replaceChildren(...(d.rows.length ? d.rows.map(card) : [h('tr', {}, h('td', { colspan: '9', class: 'mut' }, 'No results'))]));
+      list.replaceChildren(...(d.rows.length ? d.rows.map(card) : [h('tr', {}, h('td', { colspan: '10', class: 'mut' }, 'No results'))]));
     } catch (e) { toast(errMsg(e)); }
     list.style.opacity = 1;
   }
