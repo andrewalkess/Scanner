@@ -103,6 +103,12 @@ const MSG = [
   [/^الباص (\d+) اتملى \((\d+\/\d+)\)$/, m => 'Bus ' + m[1] + ' is full (' + m[2] + ')'],
   [/^اختار رقم الباص$/, 'Choose a bus number'], [/^اتجاه غير صحيح$/, 'Invalid direction'],
   [/^مفيش أعضاء فى المرحلة دى$/, 'No group members at this stage'],
+  // ---- تصحيح الحالة ----
+  [/^حالة غير معروفة$/, 'Unknown status'], [/^الطلب بالفعل فى الحالة دى$/, 'Already in this status'],
+  [/^كلهم بالفعل فى الحالة دى$/, 'All members are already in this status'], [/^المجموعة غير موجودة$/, 'Group not found'],
+  [/^التذكرة مستخدمة \(دخل الايفنت\): (.*)$/, m => 'Ticket already used (checked in): ' + m[1] + '. Cannot change its status'],
+  [/^تم (\d+) وتم تخطى (\d+) \((.*)\)$/, m => 'Done ' + m[1] + ', skipped ' + m[2] + ' (' + tr(m[3]) + ')'],
+  [/^تم (\d+) وتم تخطى (\d+) لاكتمال العدد$/, m => 'Done ' + m[1] + ', skipped ' + m[2] + ' (day full)'],
 ];
 function tr(m) { m = String(m == null ? '' : m); for (const [re, f] of MSG) { const x = m.match(re); if (x) return typeof f === 'function' ? f(x) : f; } return m; }
 
@@ -227,6 +233,32 @@ function homeView() {
   load(); timer = setInterval(load, 15000);
 }
 
+// ---------- تغيير الحالة (للتصحيح لو دوست على حاجة غلط) ----------
+function statusPicker(r, done) {
+  const L = [['review', 'Card review'], ['pending', 'Awaiting payment'], ['approved', 'Confirmed'], ['rejected', 'Rejected']];
+  const grp = !!(r.gid && r.gn > 1);
+  const chk = h('input', { type: 'checkbox', style: 'width:auto' });
+  const ov = h('div', { class: 'ov', onclick: e => { if (e.target === ov) ov.remove(); } });
+  const btns = L.map(([k, t]) => h('button', { class: 'b' + (r.status === k ? '' : ' ghost'), style: 'width:100%;margin-top:8px;padding:11px', disabled: r.status === k ? 'disabled' : null, onclick: async ev => {
+    const all = grp && chk.checked;
+    if (!confirm('Change ' + (all ? 'all ' + r.gn + ' members of this group' : r.name) + ' to "' + t + '"?')) return;
+    btns.forEach(b => b.disabled = true);
+    try {
+      const x = all ? await adm('adminSetStatusGroup', { gid: r.gid, status: k }) : await adm('adminSetStatus', { id: r.id, status: k });
+      toast('Status changed' + (x.n > 1 ? ' (' + x.n + ')' : ''), 4000);
+      if (x.msg) toast(tr(x.msg), 7000);
+      ov.remove(); done();
+    } catch (e) { toast(errMsg(e), 6000); btns.forEach((b, i) => b.disabled = L[i][0] === r.status); }
+  } }, t + (r.status === k ? ' (current)' : '')));
+  ov.append(h('div', { class: 'ovb', style: 'min-width:290px;max-width:420px;width:92vw' },
+    h('h3', { style: 'margin:0' }, 'Change status'),
+    h('p', { class: 'mut', style: 'margin:4px 0 8px' }, '#' + r.id + ' - ' + r.name),
+    ...btns,
+    grp ? h('label', { style: 'display:flex;align-items:center;justify-content:center;gap:8px;font-weight:normal;margin-top:12px' }, chk, 'Apply to the whole group (' + r.gn + ' people)') : null,
+    h('button', { class: 'ghost', style: 'margin-top:12px', onclick: () => ov.remove() }, 'Cancel')));
+  document.body.append(ov);
+}
+
 // ---------- الطلبات ----------
 function ordersView() {
   const v = $('#view'), F = S.f;
@@ -280,6 +312,7 @@ function ordersView() {
     if (r.status === 'review') { act('approveId', 'Approve + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gr > 1) actGroup('approveId', 'Approve all ' + r.gr + ' cards in group', 'ghost'); }
     else if (r.status === 'pending') { wa('WhatsApp (payment link)'); act('approve', 'Confirm payment + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gp > 1) actGroup('approve', 'Confirm payment for all ' + r.gp + ' in group', 'ghost'); }
     else if (r.status === 'approved') { wa('WhatsApp (ticket)'); }
+    add('Change status', () => statusPicker(r, load), 'ghost');
     return h('tr', {}, h('td', { class: 'mut' }, String(r.id)), h('td', {}, r.serial ? h('b', {}, String(r.serial)) : '-'), h('td', {}, h('b', {}, r.name)), h('td', {}, dEn(r.day)),
       h('td', {}, r.bus ? 'Bus' : '-'), h('td', {}, r.gid ? h('b', {}, r.gname || 'Group') : '-', r.gid ? h('div', { class: 'mut', style: 'font-size:.75rem' }, r.gn + ' people') : null),
       h('td', {}, r.hasPay ? 'Uploaded' : (r.txref || '-')),
