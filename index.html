@@ -157,7 +157,7 @@ const ago = ms => { if (!ms) return ''; const m = Math.max(0, Math.floor((Date.n
 const hrsSince = ms => ms ? (Date.now() - ms) / 3600000 : 0;
 const fillColor = (p, warn, full) => p >= full ? '#c0392b' : p >= warn ? '#e0a800' : '#2e6b52';
 
-const S = { role: '', cred: '', user: '', tab: '', day: ls.get('sd') || 'Friday', prev: ls.get('sp') === '1', f: { status: 'review', q: '', day: '', page: 1 }, urlToken: new URLSearchParams(location.search).get('s') || '' };
+const S = { role: '', cred: '', user: '', master: false, tab: '', day: ls.get('sd') || 'Friday', prev: ls.get('sp') === '1', f: { status: 'review', q: '', day: '', page: 1 }, urlToken: new URLSearchParams(location.search).get('s') || '' };
 let timer = null, scanner = null, busy = false, flashing = false, qKeyH = null;
 
 // ---------- الاتصال بالسيرفر ----------
@@ -261,12 +261,12 @@ function loginView(msg) {
 }
 async function login(role, cred) {
   S.role = role; S.cred = cred;
-  if (role === 'admin') { const u = await adm('adminLogin'); S.user = typeof u === 'string' ? u : ''; }
-  else { S.user = ''; const r = await api({ action: 'find', key: cred, query: 'x' }); if (!r.ok) throw new Error(r.msg || 'مفتاح غير صحيح'); }
+  if (role === 'admin') { const u = await adm('adminLogin'); S.user = u && typeof u === 'object' ? u.name : ''; S.master = !!(u && u.master); }
+  else { S.user = ''; S.master = false; const r = await api({ action: 'find', key: cred, query: 'x' }); if (!r.ok) throw new Error(r.msg || 'مفتاح غير صحيح'); }
   ls.put('role', role); ls.put('cred', cred);
   start();
 }
-function logout() { ls.del('cred'); S.role = ''; S.cred = ''; S.user = ''; stopCam(); clearInterval(timer); loginView(); }
+function logout() { ls.del('cred'); S.role = ''; S.cred = ''; S.user = ''; S.master = false; stopCam(); clearInterval(timer); loginView(); }
 
 // ---------- الهيكل ----------
 function start() {
@@ -350,14 +350,14 @@ function homeView() {
         ...rp.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + dEn(r.day) + ' - entered ' + fmtTime(r.first) + ', scanned again ' + fmtTime(r.at)))));
       const recent = h('div', { class: 'box' }, h('h3', { style: 'margin:0 0 6px' }, 'Latest check-ins'),
         ...(d.recent.length ? d.recent.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + dEn(r.day) + ' - ' + fmtTime(r.at)))) : [h('p', { class: 'mut' }, 'No one has checked in yet')]));
-      v.replaceChildren(alerts, ...days, h('div', { class: 'box' }, chips), recent, getActBox(), ...(rp.length ? [repeats] : []), h('p', { class: 'mut', style: 'text-align:center;font-size:.8rem' }, 'Auto-refreshes every 15 s - last update ' + fmtTime(Date.now())));
+      v.replaceChildren(alerts, ...days, h('div', { class: 'box' }, chips), recent, ...(S.master ? [getActBox()] : []), ...(rp.length ? [repeats] : []), h('p', { class: 'mut', style: 'text-align:center;font-size:.8rem' }, 'Auto-refreshes every 15 s - last update ' + fmtTime(Date.now())));
     } catch (e) { v.replaceChildren(h('p', { class: 'err' }, errMsg(e))); }
   };
   load(); timer = setInterval(load, 15000);
 }
 
 // ---------- سجل نشاط الفريق (مين قبل / رفض مين ومتى) ----------
-let actBox = null;
+let actBox = null;   // بيظهر للأدمن الرئيسى بس (والسيرفر كمان بيرفض غيره)
 function getActBox() {
   if (actBox) return actBox;   // نفس العنصر بيفضل زى ما هو مع تحديث الرئيسية كل 15 ثانية
   const SN = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected' };
