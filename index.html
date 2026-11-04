@@ -631,7 +631,7 @@ function scanView() {
     h('div', { class: 'box' }, h('div', { id: 'reader' }), last, camBtn,
       h('div', { class: 'row', style: 'margin-top:10px' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day)),
       h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal' }, prev, 'Preview mode (do not record entry)')),
-    h('div', { class: 'box' }, h('details', { class: 'man' }, h('summary', {}, "If the code doesn't work: search by number, phone or name"),
+    h('div', { class: 'box' }, h('details', { class: 'man' }, h('summary', {}, "If the code doesn't work: search by serial number, phone or name"),
       q, h('button', { class: 'alt', onclick: find }, 'Search'), found,
       h('p', { class: 'mut', style: 'font-size:.85rem;margin-bottom:0' }, "Compare the name with the person's ID before checking in."))));
   counts(); timer = setInterval(counts, 20000);
@@ -733,7 +733,7 @@ function busView() {
     h('div', { class: 'box' }, grid, h('div', { id: 'reader' }), last, camBtn,
       h('div', { class: 'row', style: 'margin-top:10px' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day), h('div', {}, h('label', { style: 'margin-top:0' }, 'Trip'), dir)),
       h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal' }, prev, 'Preview mode (do not record boarding)')),
-    h('div', { class: 'box' }, h('details', { class: 'man' }, h('summary', {}, "If the code doesn't work: search by number, phone or name"), q, h('button', { class: 'alt', onclick: find }, 'Search'), found)),
+    h('div', { class: 'box' }, h('details', { class: 'man' }, h('summary', {}, "If the code doesn't work: search by serial number, phone or name"), q, h('button', { class: 'alt', onclick: find }, 'Search'), found)),
     ...(S.role === 'admin' ? [h('div', { class: 'box' }, missBtn, missingBox)] : []));
   draw(); refresh(); timer = setInterval(refresh, 20000);
   toggleCam();
