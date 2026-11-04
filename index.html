@@ -16,7 +16,7 @@ header h1{font-size:1.15rem;margin:0;flex:1}
 header button{width:auto;margin:0;background:#ffffff26;padding:7px 12px;font-size:.85rem}
 #view{flex:1;padding:14px 14px calc(86px + env(safe-area-inset-bottom))}
 nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:6}
-nav button{flex:1;max-width:260px;background:none;color:var(--mut);border:0;border-radius:0;margin:0;padding:10px 4px;font-size:.85rem;font-weight:bold}
+nav button{flex:1;max-width:260px;background:none;color:var(--mut);border:0;border-radius:0;margin:0;padding:10px 4px;font-size:.8rem;font-weight:bold}
 nav button b{display:block;font-size:1.35rem;line-height:1.2}
 nav button.on{color:var(--g)}
 nav button.on b{transform:scale(1.1)}
@@ -28,9 +28,7 @@ label{display:block;margin:10px 0 4px;font-weight:bold}
 .row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:130px;margin-top:0}
 .seg{display:flex;gap:8px}.seg button{margin:0;background:#e8e6e1;color:var(--tx)}.seg button.on{background:var(--g);color:#fff}
 .err{color:#a11;font-weight:bold}.ok{color:#176b35;font-weight:bold}.mut{color:var(--mut)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
 .item{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 4px #0001}
-.item .nm{font-size:1.1rem;font-weight:bold}
 .st{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:bold;font-size:.8rem}
 .st-review{background:#FFA726}.st-pending{background:#FFF176}.st-approved{background:#81C784}.st-rejected{background:#E57373}
 .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
@@ -47,7 +45,7 @@ label{display:block;margin:10px 0 4px;font-weight:bold}
 .tbl .b{flex:none;min-width:0;padding:6px 10px;font-size:.78rem;border-radius:7px}
 .pay{width:auto;min-width:110px;padding:6px 8px;font-size:.85rem;margin:0}
 .busgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-.busbtn{margin:0;padding:10px 4px;background:#e8e6e1;color:var(--tx);font-size:.95rem;line-height:1.3}
+.busbtn{margin:0;padding:12px 4px;background:#e8e6e1;color:var(--tx);font-size:1rem;line-height:1.3}
 .busbtn small{display:block;font-weight:normal;color:var(--mut)}
 .busbtn.on{background:var(--g);color:#fff}.busbtn.on small{color:#d8e8df}.busbtn.full{outline:2px solid #c0392b}
 .pg{display:flex;align-items:center;gap:10px;justify-content:center;margin:14px 0}.pg button{width:auto;margin:0;padding:9px 18px}
@@ -55,20 +53,52 @@ label{display:block;margin:10px 0 4px;font-weight:bold}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:10px}
 .kpi{background:#fff;border-radius:14px;padding:14px;text-align:center;box-shadow:0 1px 4px #0001}
 .kpi small{color:var(--mut);display:block}
-.bar{height:12px;background:#e6e3dc;border-radius:99px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--g2);border-radius:99px}
+.bar{height:12px;background:#e6e3dc;border-radius:99px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--g2);border-radius:99px;transition:width .3s}
 .chips{display:flex;flex-wrap:wrap;gap:8px}.chip{background:#fff;border-radius:999px;padding:6px 14px;box-shadow:0 1px 3px #0001;font-weight:bold}
-#res{text-align:center;font-size:1.1rem;transition:background .2s}#res .big{font-size:2.4rem}
-.warn{background:#fff3cd;color:#8a6d00}.good{background:#d9f3e1;color:#176b35}.bad{background:#fbe0e0;color:#a11}.wait{background:#fff;color:#555}
 #reader{width:100%;margin-top:10px;border-radius:12px;overflow:hidden}
 .found{background:#faf8f3;border:1px solid #e3ded3;border-radius:10px;padding:10px 12px;margin-top:8px}
 .ov{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;z-index:20;padding:10px}
 .ovb{background:#fff;border-radius:14px;padding:12px;max-width:96vw;max-height:96vh;overflow:auto;text-align:center}
 .ovb img{max-width:100%;max-height:78vh}
-#toast{position:fixed;left:12px;right:12px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:30;display:flex;flex-direction:column;gap:8px;pointer-events:none;align-items:center}
+#toast{position:fixed;left:12px;right:12px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:60;display:flex;flex-direction:column;gap:8px;pointer-events:none;align-items:center}
 .tt{background:#222;color:#fff;padding:10px 16px;border-radius:12px;font-weight:bold;pointer-events:auto;max-width:520px}
 .tt a{color:#7dffaa}
 .login{max-width:420px;margin:0 auto;padding:30px 18px}
 .login h1{text-align:center;color:var(--g);margin:10px 0 0}
+
+/* ---- kiosk: full-screen scan result ---- */
+.flash{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;color:#fff;cursor:pointer;animation:fin .12s}
+.flash.good{background:#1e9a4b}.flash.bad{background:#c0392b}.flash.warn{background:#d49a00}
+.flash .ic{font-size:6rem;line-height:1}
+.flash .tl{font-size:2.2rem;font-weight:900;letter-spacing:.05em}
+.flash .nm{font-size:2.3rem;font-weight:800;line-height:1.25;max-width:92vw;word-break:break-word}
+.flash .sn{font-size:4rem;font-weight:900;line-height:1}
+.flash .ms{font-size:1.2rem;max-width:90vw;opacity:.95}
+.flash .chips{justify-content:center}.flash .chip{background:#ffffff33;color:#fff;box-shadow:none;font-size:1.1rem}
+.flash .hint{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom));font-size:.85rem;opacity:.7}
+@keyframes fin{from{opacity:0}to{opacity:1}}
+.kbar .kt{font-size:1.4rem;font-weight:900;text-align:center}
+.kbar .bar{height:14px}
+.last{text-align:center;margin-top:8px;font-weight:bold}
+details.man>summary{cursor:pointer;font-weight:bold;padding:4px 0}
+
+/* ---- review queue ---- */
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.qgrid{grid-template-columns:1fr}}
+.imgp{background:#fff;border-radius:14px;padding:10px;box-shadow:0 1px 4px #0001;text-align:center;min-height:120px}
+.imgs img{max-width:100%;max-height:62vh;border-radius:8px;cursor:zoom-in}
+.qacts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.qbig{margin:0;padding:20px 10px;font-size:1.25rem}
+.qbig.ok{background:#1e9a4b}.qbig.no{background:#c0392b}.qbig.sk{background:#8a8a8a}
+.qname{font-size:1.5rem;font-weight:900}
+.qchip{width:auto;margin:0;padding:8px 14px;border-radius:999px;background:#fff;color:var(--tx);border:1px solid #ddd;font-size:.9rem}
+.qchip.on{background:var(--g);color:#fff;border-color:var(--g)}
+
+/* ---- dashboard alerts + fill ---- */
+.alert{padding:10px 14px;border-radius:12px;margin:8px 0;font-weight:bold;cursor:pointer}
+.alert.bad{background:#fbe0e0;color:#a11}.alert.warn{background:#fff3cd;color:#8a6d00}.alert.good{background:#d9f3e1;color:#176b35;cursor:default}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-top:4px}
+.bm{text-align:center}.bm .bar{margin:2px 0}
 </style></head><body>
 <div id="app"></div><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
@@ -76,6 +106,12 @@ label{display:block;margin:10px 0 4px;font-weight:bold}
 // ======= رابط الـ Web app بتاع Apps Script (اللى بينتهى بـ /exec) =======
 const APP_URL = 'https://script.google.com/macros/s/AKfycbzhOG6LUUf8TcIw6Hal3r6waD5HkAUV_uSf0IWS7qwVT5nMCD4Q3MgubraayKBfIJayrA/exec';
 const EVENT = 'Together 11';
+// ======= حدود التنبيهات (عدّلها براحتك) =======
+const WARN_PCT = 85, FULL_PCT = 95;        // امتلاء اليوم: أصفر من 85%، أحمر من 95%
+const BUS_WARN_PCT = 90, BUS_FULL_PCT = 100; // امتلاء الباص: أصفر من 90% (45 من 50)، أحمر عند الامتلاء
+const RECEIPT_WARN_H = 3;                  // إيصال مستنى تأكيد أكتر من كده (ساعات) يطلع تنبيه
+const REVIEW_WARN_H = 12;                  // بطاقة مستنية مراجعة أكتر من كده (ساعات) تطلع تنبيه
+const FLASH_OK_MS = 2000, FLASH_BAD_MS = 3200;   // مدة ظهور شاشة النتيجة فى السكانر
 
 const $ = s => document.querySelector(s);
 const ls = { get: k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, put: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: k => { try { localStorage.removeItem(k); } catch (e) {} } };
@@ -114,9 +150,12 @@ const MSG = [
 function tr(m) { m = String(m == null ? '' : m); for (const [re, f] of MSG) { const x = m.match(re); if (x) return typeof f === 'function' ? f(x) : f; } return m; }
 
 const tokenOf = s => { s = String(s || '').trim(); const m = s.match(/[?&]s=([0-9A-Za-z]+)/); return m ? m[1] : s; };
+const ago = ms => { if (!ms) return ''; const m = Math.max(0, Math.floor((Date.now() - ms) / 60000)); return m < 60 ? m + 'm' : m < 1440 ? Math.floor(m / 60) + 'h' : Math.floor(m / 1440) + 'd'; };
+const hrsSince = ms => ms ? (Date.now() - ms) / 3600000 : 0;
+const fillColor = (p, warn, full) => p >= full ? '#c0392b' : p >= warn ? '#e0a800' : '#2e6b52';
 
 const S = { role: '', cred: '', tab: '', day: ls.get('sd') || 'Friday', prev: ls.get('sp') === '1', f: { status: 'review', q: '', day: '', page: 1 }, urlToken: new URLSearchParams(location.search).get('s') || '' };
-let timer = null, scanner = null, busy = false;
+let timer = null, scanner = null, busy = false, flashing = false, qKeyH = null;
 
 // ---------- الاتصال بالسيرفر ----------
 async function api(body, ms) {
@@ -154,6 +193,48 @@ function modal(src, cap) {
 }
 const fmtTime = ms => new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
+// ---------- شاشة النتيجة الكبيرة (للسكانر) ----------
+// kind: good | bad | warn. بتختفى لوحدها وبتجهز للمسح اللى بعده. لمسة على الشاشة تقفلها فوراً.
+function flash(kind, title, name, serial, chips, msg, ms) {
+  if (kind === 'good') { beep(true); if (navigator.vibrate) navigator.vibrate(80); }
+  else if (kind === 'warn') { beep('warn'); if (navigator.vibrate) navigator.vibrate([60, 40, 60]); }
+  else { beep(false); if (navigator.vibrate) navigator.vibrate([120, 60, 120]); }
+  document.querySelectorAll('.flash').forEach(x => x.remove());
+  flashing = true;
+  const close = () => { if (!ov.isConnected) return; ov.remove(); flashing = false; };
+  const ov = h('div', { class: 'flash ' + kind, onclick: close },
+    h('div', { class: 'ic' }, kind === 'good' ? '✔' : kind === 'warn' ? '⚠' : '✖'),
+    h('div', { class: 'tl' }, title),
+    name ? h('div', { class: 'nm', dir: 'auto' }, name) : null,
+    serial ? h('div', { class: 'sn' }, '#' + serial) : null,
+    chips && chips.length ? h('div', { class: 'chips' }, ...chips.map(c => h('span', { class: 'chip' }, c))) : null,
+    msg ? h('div', { class: 'ms' }, msg) : null,
+    h('div', { class: 'hint' }, 'tap to dismiss'));
+  document.body.append(ov);
+  setTimeout(close, ms || (kind === 'good' ? FLASH_OK_MS : FLASH_BAD_MS));
+}
+
+// ---------- الكاميرا (بتفتح لوحدها) ----------
+function stopCam() {
+  if (!scanner) return;
+  const s = scanner; scanner = null;
+  try { s.stop().then(() => { try { s.clear(); } catch (e) {} }).catch(() => {}); } catch (e) {}
+}
+async function startCam(onCode, tab) {
+  stopCam();
+  if (!$('#reader')) return false;
+  try {
+    const sc = new Html5Qrcode('reader'); scanner = sc; let last = '', lastAt = 0;
+    await sc.start({ facingMode: 'environment' }, { fps: 10, qrbox: (w, hh) => { const s = Math.floor(Math.min(w, hh) * 0.7); return { width: s, height: s }; } }, text => {
+      const now = Date.now();
+      if (busy || flashing || (text === last && now - lastAt < 4000)) return;   // يتجاهل نفس الكود لو اتمسح تانى بسرعة
+      last = text; lastAt = now; onCode(tokenOf(text));
+    }, () => {});
+    if (S.tab !== tab) stopCam();
+    return true;
+  } catch (e) { scanner = null; return false; }
+}
+
 // ---------- تسجيل الدخول ----------
 function loginView(msg) {
   let role = ls.get('role') || 'admin';
@@ -186,7 +267,7 @@ function logout() { ls.del('cred'); S.role = ''; S.cred = ''; stopCam(); clearIn
 
 // ---------- الهيكل ----------
 function start() {
-  const tabs = S.role === 'admin' ? [['home', '📊', 'Dashboard'], ['orders', '📋', 'Orders'], ['scan', '📷', 'Gate'], ['bus', '🚌', 'Bus']] : [['scan', '📷', 'Gate'], ['bus', '🚌', 'Bus']];
+  const tabs = S.role === 'admin' ? [['home', '📊', 'Dashboard'], ['queue', '✅', 'Review'], ['orders', '📋', 'Orders'], ['scan', '📷', 'Gate'], ['bus', '🚌', 'Bus']] : [['scan', '📷', 'Gate'], ['bus', '🚌', 'Bus']];
   const nav = h('nav', {}, ...tabs.map(t => h('button', { id: 'n-' + t[0], onclick: () => go(t[0]) }, h('b', {}, t[1]), t[2])));
   const hd = h('header', {}, h('h1', {}, EVENT), h('button', { onclick: () => go(S.tab, true) }, 'Refresh'), h('button', { onclick: logout }, 'Log out'));
   $('#app').replaceChildren(hd, h('div', { id: 'view' }), nav);
@@ -194,22 +275,59 @@ function start() {
 }
 function go(tab, force) {
   if (tab === S.tab && !force) return;
-  if (tab !== 'scan') stopCam();
+  stopCam();
+  if (qKeyH) { document.removeEventListener('keydown', qKeyH); qKeyH = null; }
   clearInterval(timer);
   S.tab = tab;
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.id === 'n-' + tab));
   window.scrollTo(0, 0);
   $('#app').style.maxWidth = tab === 'orders' ? '1500px' : '1100px';
-  ({ home: homeView, orders: ordersView, scan: scanView, bus: busView })[tab]();
+  ({ home: homeView, queue: queueView, orders: ordersView, scan: scanView, bus: busView })[tab]();
 }
 
-// ---------- الرئيسية (إحصائيات حية) ----------
+// ---------- الرئيسية (إحصائيات حية + تنبيهات) ----------
 function homeView() {
   const v = $('#view'); v.replaceChildren(h('p', { class: 'mut' }, 'Loading...'));
   const load = async () => {
     try {
       const d = await adm('adminStats');
       if (S.tab !== 'home') return;
+      const cfg = d.busCfg || null, Q = d.queue || null;
+
+      // ----- تنبيهات -----
+      const al = [];
+      const A = (lvl, txt, fn) => al.push(h('div', { class: 'alert ' + lvl, onclick: fn || null }, txt));
+      if (Q) {
+        if (Q.receipts > 0 && hrsSince(Q.receiptsOldest) >= RECEIPT_WARN_H)
+          A('bad', '💸 ' + Q.receipts + ' receipt(s) waiting for confirmation - oldest ' + ago(Q.receiptsOldest) + '. Tap to review.', () => { go('queue'); });
+        if (Q.review > 0 && hrsSince(Q.reviewOldest) >= REVIEW_WARN_H)
+          A('warn', '🪪 ' + Q.review + ' ID card(s) waiting for review - oldest ' + ago(Q.reviewOldest) + '. Tap to review.', () => { go('queue'); });
+      }
+      Object.keys(d.days).forEach(k => {
+        const x = d.days[k], p = x.approved * 100 / x.capacity;
+        if (p >= FULL_PCT) A('bad', '🚫 ' + dEn(x.label) + ' is ' + Math.round(p) + '% full (' + x.approved + '/' + x.capacity + ' confirmed)');
+        else if (p >= WARN_PCT) A('warn', '⚠ ' + dEn(x.label) + ' is almost full: ' + x.approved + '/' + x.capacity + ' confirmed');
+        if (cfg) {
+          const seats = cfg.n * cfg.cap, bp = (x.bus || 0) * 100 / seats;
+          if (bp >= BUS_FULL_PCT) A('bad', '🚌 ' + dEn(x.label) + ': bus seats are full (' + x.bus + '/' + seats + ' riders confirmed)');
+          else if (bp >= BUS_WARN_PCT) A('warn', '🚌 ' + dEn(x.label) + ': bus seats almost full (' + x.bus + '/' + seats + ' riders confirmed)');
+          const b = (d.bus || {})[k] || {};
+          [['out', 'outbound'], ['back', 'return']].forEach(([dr, lb]) => (b[dr] || []).forEach((c, i) => {
+            const pp = c * 100 / cfg.cap;
+            if (pp >= BUS_FULL_PCT) A('bad', '🚌 ' + dEn(x.label) + ' ' + lb + ': Bus ' + (i + 1) + ' is full (' + c + '/' + cfg.cap + ')');
+            else if (pp >= BUS_WARN_PCT) A('warn', '🚌 ' + dEn(x.label) + ' ' + lb + ': Bus ' + (i + 1) + ' is almost full (' + c + '/' + cfg.cap + ')');
+          }));
+        }
+      });
+      const alerts = al.length ? h('div', {}, ...al) : h('div', { class: 'alert good' }, '✔ No alerts - everything looks normal');
+
+      // ----- كروت الأيام -----
+      const busRows = k => {
+        if (!cfg || !d.bus || !d.bus[k]) return null;
+        return h('div', { style: 'margin-top:12px' }, h('b', {}, 'Bus fill'),
+          ...[['out', 'Outbound'], ['back', 'Return']].map(([dr, lb]) => h('div', { style: 'margin-top:6px' }, h('span', { class: 'mut' }, lb),
+            h('div', { class: 'bgrid' }, ...(d.bus[k][dr] || []).map((c, i) => { const p = c * 100 / cfg.cap;
+              return h('div', { class: 'bm' }, h('small', {}, 'Bus ' + (i + 1)), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, p) + '%;background:' + fillColor(p, BUS_WARN_PCT, BUS_FULL_PCT) })), h('small', {}, c + '/' + cfg.cap)); }))))); };
       const days = Object.keys(d.days).map(k => {
         const x = d.days[k], pct = x.approved ? Math.round(x.entered * 100 / x.approved) : 0, cap = Math.round(x.approved * 100 / x.capacity);
         return h('div', { class: 'box' }, h('h2', { style: 'margin:0 0 8px' }, dEn(x.label)),
@@ -219,7 +337,8 @@ function homeView() {
             h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(Math.max(0, x.approved - x.entered))), h('small', {}, 'Not arrived yet')),
             h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.bus || 0)), h('small', {}, 'Bus riders (confirmed)'))),
           h('p', { class: 'mut', style: 'margin:10px 0 0' }, 'Attendance of confirmed: ' + pct + '%'), h('div', { class: 'bar' }, h('i', { style: 'width:' + pct + '%' })),
-          h('p', { class: 'mut', style: 'margin:0' }, 'Confirmed seats: ' + x.approved + ' of ' + x.capacity + ' (' + cap + '%)'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, cap) + '%;background:#c9a227' })));
+          h('p', { class: 'mut', style: 'margin:0' }, 'Confirmed seats: ' + x.approved + ' of ' + x.capacity + ' (' + cap + '%)'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, cap) + '%;background:' + fillColor(cap, WARN_PCT, FULL_PCT) })),
+          busRows(k));
       });
       const st = d.status, L = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected' };
       const chips = h('div', { class: 'chips' }, ...Object.keys(L).map(k => h('span', { class: 'chip' }, h('span', { class: 'st st-' + k, style: 'margin-left:6px' }, L[k]), String(st[k] || 0))), h('span', { class: 'chip' }, 'All requests: ' + d.total));
@@ -228,10 +347,95 @@ function homeView() {
         ...rp.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + dEn(r.day) + ' - entered ' + fmtTime(r.first) + ', scanned again ' + fmtTime(r.at)))));
       const recent = h('div', { class: 'box' }, h('h3', { style: 'margin:0 0 6px' }, 'Latest check-ins'),
         ...(d.recent.length ? d.recent.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + dEn(r.day) + ' - ' + fmtTime(r.at)))) : [h('p', { class: 'mut' }, 'No one has checked in yet')]));
-      v.replaceChildren(...days, h('div', { class: 'box' }, chips), recent, ...(rp.length ? [repeats] : []), h('p', { class: 'mut', style: 'text-align:center;font-size:.8rem' }, 'Auto-refreshes every 15 s - last update ' + fmtTime(Date.now())));
+      v.replaceChildren(alerts, ...days, h('div', { class: 'box' }, chips), recent, ...(rp.length ? [repeats] : []), h('p', { class: 'mut', style: 'text-align:center;font-size:.8rem' }, 'Auto-refreshes every 15 s - last update ' + fmtTime(Date.now())));
     } catch (e) { v.replaceChildren(h('p', { class: 'err' }, errMsg(e))); }
   };
   load(); timer = setInterval(load, 15000);
+}
+
+// ---------- طابور المراجعة: طلب واحد فى كل مرة ----------
+const QS = { mode: 'review', items: [], i: 0, cache: {}, wa: ls.get('qwa') !== '0' };
+function queueView() {
+  const v = $('#view');
+  let counts = { review: 0, receipt: 0 }, working = false;
+  const seg = h('div', { class: 'seg' }), body = h('div', {});
+  v.replaceChildren(seg, body);
+  const drawSeg = () => seg.replaceChildren(
+    h('button', { class: QS.mode === 'review' ? 'on' : '', onclick: () => { QS.mode = 'review'; loadList(); } }, 'ID cards (' + counts.review + ')'),
+    h('button', { class: QS.mode === 'receipt' ? 'on' : '', onclick: () => { QS.mode = 'receipt'; loadList(); } }, 'Receipts (' + counts.receipt + ')'));
+  async function loadList() {
+    body.replaceChildren(h('p', { class: 'mut' }, 'Loading...'));
+    try {
+      const d = await adm('adminList', { filter: QS.mode, q: '', page: 1, day: '', asc: true });   // الأقدم الأول
+      counts.review = d.counts.review || 0; counts.receipt = d.counts.receipt || 0;
+      QS.items = d.rows; QS.i = 0; QS.cache = {}; drawSeg(); showItem();
+    } catch (e) { body.replaceChildren(h('p', { class: 'err' }, errMsg(e))); }
+  }
+  const img = (kind, r) => {
+    const key = kind + r.id;
+    if (!QS.cache[key]) QS.cache[key] = adm(kind === 'id' ? 'adminGetId' : 'adminGetPay', { id: r.id }).catch(e => { delete QS.cache[key]; throw e; });
+    return QS.cache[key];
+  };
+  function panel(title, kind, r) {
+    const slot = h('div', { class: 'imgs' }, h('span', { class: 'mut' }, 'Loading...'));
+    img(kind, r).then(src => slot.replaceChildren(h('img', { src: src, onclick: () => modal(src, r.name + ' - ' + title) })))
+      .catch(e => slot.replaceChildren(h('span', { class: 'mut' }, errMsg(e))));
+    return h('div', { class: 'imgp' }, h('div', { class: 'mut', style: 'font-weight:bold' }, title), slot);
+  }
+  function showItem() {
+    const r = QS.items[QS.i];
+    if (!r) { body.replaceChildren(h('div', { class: 'box', style: 'text-align:center' }, h('div', { class: 'big' }, '🎉'), h('p', {}, 'Nothing left in this queue'), h('button', { class: 'ghost', onclick: loadList }, 'Reload'))); return; }
+    const rev = QS.mode === 'review', grp = r.gid && (rev ? r.gr : r.gp) > 1;
+    const due = rev ? r.amount : (grp ? r.gamt : r.amount);
+    const keep = new Set([r.id]);
+    for (const k of Object.keys(QS.cache)) { if (!keep.has(Number(k.replace(/^\D+/, ''))) && !(QS.items[QS.i + 1] && Number(k.replace(/^\D+/, '')) === QS.items[QS.i + 1].id)) delete QS.cache[k]; }
+    const chk = h('input', { type: 'checkbox', style: 'width:auto', onchange: () => { QS.wa = chk.checked; ls.put('qwa', QS.wa ? '1' : '0'); } }); chk.checked = QS.wa;
+    const approve = h('button', { class: 'qbig ok', onclick: () => decide('approve') }, rev ? '✔ Approve card (A)' : '✔ Confirm payment (A)');
+    const reject = h('button', { class: 'qbig no', onclick: () => decide('reject') }, '✖ Reject');
+    body.replaceChildren(
+      h('div', { class: 'box' },
+        h('div', { class: 'mut' }, 'Request ' + (QS.i + 1) + ' of ' + QS.items.length + ' loaded - waiting ' + ago(rev ? r.created : (r.payAt || r.idokAt || r.created))),
+        h('div', { class: 'qname', dir: 'auto' }, '#' + r.id + '  ' + r.name),
+        h('div', { class: 'chips', style: 'margin-top:8px' },
+          h('span', { class: 'chip' }, dEn(r.day)), h('span', { class: 'chip' }, r.bus ? '🚌 Bus' : 'No bus'),
+          r.gid ? h('span', { class: 'chip' }, '👥 ' + (r.gname || 'Group') + ' (' + r.gn + ')') : null,
+          due ? h('span', { class: 'chip' }, (rev ? 'Ticket: ' : 'Expected: ') + due + ' EGP') : null)),
+      h('div', { class: 'qgrid' }, panel('ID card', 'id', r), rev ? null : panel('Transfer receipt', 'pay', r)),
+      h('div', { class: 'qacts' }, approve, reject,
+        h('button', { class: 'qbig sk', onclick: () => { QS.i = Math.max(0, QS.i - 1); showItem(); } }, '← Back'),
+        h('button', { class: 'qbig sk', onclick: next }, 'Skip → (S)')),
+      grp ? h('button', { class: 'ghost', onclick: () => decide('approve', true) }, rev ? 'Approve all ' + r.gr + ' cards in this group' : 'Confirm payment for all ' + r.gp + ' in this group') : null,
+      h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal;margin-top:12px' }, chk, 'Open WhatsApp after approving'));
+    const nx = QS.items[QS.i + 1];   // تحميل مسبق للتالى
+    if (nx) { img('id', nx).catch(() => {}); if (!rev) img('pay', nx).catch(() => {}); }
+  }
+  function next() { QS.i++; showItem(); }
+  async function decide(a, all) {
+    const r = QS.items[QS.i]; if (!r || working) return;
+    if (a === 'reject' && !confirm('Reject ' + r.name + "'s request?")) return;
+    if (all && !confirm('Apply to the whole group?')) return;
+    working = true;
+    const act = QS.mode === 'review' ? 'approveId' : 'approve';
+    const w = (a !== 'reject' && QS.wa) ? window.open('', '_blank') : null;   // لازم يتفتح فورا مع الضغطة
+    try {
+      const x = a === 'reject' ? await adm('adminAct', { id: r.id, act: 'reject' })
+        : all ? await adm('adminActGroup', { gid: r.gid, act: act }) : await adm('adminAct', { id: r.id, act: act });
+      if (x.msg) toast(tr(x.msg), 6000);
+      if (w) { if (x.wa) w.location = x.wa; else w.close(); }
+      if (all) { working = false; await loadList(); return; }
+      QS.items.splice(QS.i, 1); counts[QS.mode] = Math.max(0, counts[QS.mode] - 1); drawSeg();
+      toast(a === 'reject' ? 'Rejected' : 'Done ✔', 1500);
+    } catch (e) { if (w) w.close(); toast(errMsg(e), 6000); }
+    working = false; showItem();
+  }
+  if (qKeyH) document.removeEventListener('keydown', qKeyH);
+  qKeyH = e => {
+    if (S.tab !== 'queue' || /INPUT|SELECT|TEXTAREA/.test((e.target || {}).tagName || '') || e.ctrlKey || e.metaKey) return;
+    if (e.key === 'a' || e.key === 'A') decide('approve');
+    else if (e.key === 's' || e.key === 'S' || e.key === 'ArrowRight') next();
+  };
+  document.addEventListener('keydown', qKeyH);
+  loadList();
 }
 
 // ---------- تغيير الحالة (للتصحيح لو دوست على حاجة غلط) ----------
@@ -264,7 +468,8 @@ function statusPicker(r, done) {
 function ordersView() {
   const v = $('#view'), F = S.f;
   const ST = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected' };
-  const LBL = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected', entered: 'Checked in', all: 'All' };
+  const LBL = { review: 'Card review', receipt: 'Receipt uploaded (to confirm)', awaitpay: 'Awaiting payment (no receipt)', pending: 'Awaiting payment (all)', approved: 'Confirmed', rejected: 'Rejected', entered: 'Checked in', all: 'All' };
+  const QF = [['review', 'Cards to review'], ['receipt', 'Receipts to confirm'], ['awaitpay', 'Awaiting payment']];
   const opt = (val, t) => h('option', { value: val }, t);
   let qt = null;
   const q = h('input', { placeholder: 'Search by name or phone', value: F.q, oninput: () => { clearTimeout(qt); qt = setTimeout(() => { F.q = q.value; F.page = 1; load(); }, 400); } });
@@ -272,11 +477,12 @@ function ordersView() {
   fs.value = F.status;
   const fd = h('select', { onchange: () => { F.day = fd.value; F.page = 1; load(); } }, opt('', 'All days'), opt('Friday', 'Friday'), opt('Saturday', 'Saturday'));
   fd.value = F.day;
+  const qf = h('div', { class: 'chips', style: 'margin-top:10px' }, ...QF.map(([k, t]) => h('button', { class: 'qchip', id: 'qf-' + k, onclick: () => { F.status = k; F.page = 1; fs.value = k; load(); } }, t)));
   const list = h('tbody', {}), info = h('span', { class: 'mut' });
   const table = h('table', { class: 'tbl' }, h('thead', {}, h('tr', {}, ...['#', 'Serial', 'Name', 'Day', 'Bus', 'Group', 'Receipt', 'Status', 'Payment', 'Actions'].map(x => h('th', {}, x)))), list);
   const prevB = h('button', { class: 'ghost', onclick: () => { F.page--; load(); } }, 'Previous');
   const nextB = h('button', { class: 'ghost', onclick: () => { F.page++; load(); } }, 'Next');
-  v.replaceChildren(h('div', { class: 'row' }, q, fs, fd), h('div', { style: 'height:12px' }), h('div', { class: 'tw' }, table), h('div', { class: 'pg' }, prevB, info, nextB));
+  v.replaceChildren(h('div', { class: 'row' }, q, fs, fd), qf, h('div', { style: 'height:12px' }), h('div', { class: 'tw' }, table), h('div', { class: 'pg' }, prevB, info, nextB));
 
   async function viewImg(fn, r, title) { try { modal(await adm(fn, { id: r.id }), r.name + ' - ' + title); } catch (e) { toast(errMsg(e)); } }
   function paySel(r) {   // طريقة الدفع: Bank / Orange Cash (بتتحدد من هنا وبتتسجل فى الشيتات على طول)
@@ -326,10 +532,13 @@ function ordersView() {
     else if (r.status === 'pending') { wa('WhatsApp (payment link)'); act('approve', 'Confirm payment + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gp > 1) actGroup('approve', 'Confirm payment for all ' + r.gp + ' in group', 'ghost'); }
     else if (r.status === 'approved') { wa('WhatsApp (ticket)'); }
     add('Change status', () => statusPicker(r, load), 'ghost');
+    const wait = r.status === 'review' ? 'waiting ' + ago(r.created)
+      : r.status === 'pending' ? (r.hasPay ? 'receipt ' + ago(r.payAt || r.idokAt || r.created) : 'hold ' + ago(r.idokAt || r.created)) : '';
     return h('tr', {}, h('td', { class: 'mut' }, String(r.id)), h('td', {}, r.serial ? h('b', {}, String(r.serial)) : '-'), h('td', {}, h('b', {}, r.name)), h('td', {}, dEn(r.day)),
       h('td', {}, r.bus ? 'Bus' : '-'), h('td', {}, r.gid ? h('b', {}, r.gname || 'Group') : '-', r.gid ? h('div', { class: 'mut', style: 'font-size:.75rem' }, r.gn + ' people') : null),
       h('td', {}, r.hasPay ? 'Uploaded' : (r.txref || '-')),
       h('td', {}, h('span', { class: 'st st-' + r.status }, ST[r.status] || r.status),
+        wait && r.created ? h('div', { class: 'mut', style: 'font-size:.75rem' }, wait) : null,
         r.usedAt ? h('div', { class: 'ok', style: 'font-size:.8rem' }, 'In: ' + new Date(r.usedAt).toLocaleString('en-GB')) : null),
       h('td', {}, paySel(r)),
       h('td', { class: 'actd' }, acts));
@@ -340,6 +549,7 @@ function ordersView() {
       const d = await adm('adminList', { filter: F.status, q: F.q, page: F.page, day: F.day });
       F.page = d.page;
       [...fs.options].forEach(o => { o.textContent = LBL[o.value] + ' (' + (d.counts[o.value] || 0) + ')'; });
+      QF.forEach(([k, t]) => { const b = $('#qf-' + k); if (b) { b.textContent = t + ' (' + (d.counts[k] || 0) + ')'; b.classList.toggle('on', F.status === k); } });
       info.textContent = 'Page ' + d.page + ' of ' + d.pages + ' (' + d.total + ' requests)';
       prevB.disabled = d.page <= 1; nextB.disabled = d.page >= d.pages;
       list.replaceChildren(...(d.rows.length ? d.rows.map(card) : [h('tr', {}, h('td', { colspan: '10', class: 'mut' }, 'No results'))]));
@@ -349,57 +559,59 @@ function ordersView() {
   load();
 }
 
-// ---------- السكانر ----------
-function stopCam() { if (scanner) { try { scanner.stop(); } catch (e) {} scanner = null; } }
+// ---------- سكانر الباب (وضع الكشك) ----------
 function scanView() {
   const v = $('#view');
-  const res = h('div', { id: 'res', class: 'box wait' }, 'Ready');
-  const day = h('select', { onchange: save }, h('option', { value: 'Friday' }, 'Friday'), h('option', { value: 'Saturday' }, 'Saturday'));
+  const day = h('select', { onchange: () => { save(); counts(); } }, h('option', { value: 'Friday' }, 'Friday'), h('option', { value: 'Saturday' }, 'Saturday'));
   day.value = S.day;
   const prev = h('input', { type: 'checkbox', style: 'width:auto', onchange: save }); prev.checked = S.prev;
   function save() { S.day = day.value; S.prev = prev.checked; ls.put('sd', S.day); ls.put('sp', S.prev ? '1' : '0'); }
-  function show(cls, big, msg) {
-    res.className = 'box ' + cls; res.replaceChildren();
-    if (big) res.append(h('div', { class: 'big' }, big));
-    res.append(h('div', {}, msg));
-    if (cls === 'good' || cls === 'bad') { beep(cls === 'good'); if (navigator.vibrate) navigator.vibrate(cls === 'good' ? 80 : [120, 60, 120]); }
+  const kt = h('div', { class: 'kt' }, '-'), kb = h('i', { style: 'width:0%' });
+  const kbar = h('div', { class: 'box kbar', style: 'display:none' }, kt, h('div', { class: 'bar' }, kb));
+  const last = h('div', { class: 'last mut' }, 'Ready to scan');
+  async function counts() {   // "دخلوا 312 من 620"
+    try {
+      const r = await api(Object.assign({ action: 'gateStats', day: S.day }, auth()));
+      if (r.ok && r.data && S.tab === 'scan') {
+        kbar.style.display = ''; kt.textContent = 'Checked in ' + r.data.entered + ' of ' + r.data.approved;
+        kb.style.width = (r.data.approved ? Math.min(100, Math.round(r.data.entered * 100 / r.data.approved)) : 0) + '%';
+      }
+    } catch (e) {}
+  }
+  function present(r) {
+    const chips = [];
+    if (r.day) chips.push(dEn(r.day)); if (r.hasBus) chips.push('🚌 BUS'); if (S.prev) chips.push('PREVIEW - not recorded');
+    flash(r.ok ? 'good' : 'bad', r.ok ? 'ALLOWED' : 'DENIED', r.name || '', r.serial || '', chips, r.ok ? '' : tr(r.msg), r.ok ? FLASH_OK_MS : FLASH_BAD_MS);
+    last.textContent = (r.ok ? '✔ ' : '✖ ') + (r.name || tr(r.msg));
   }
   async function check(code) {
     if (busy) return; busy = true; save();
-    show('wait', '', 'Checking...');
-    try {
-      const r = await api(Object.assign({ action: 'scan', code: code, day: S.day, preview: S.prev }, auth()), 20000);
-      show(r.ok ? 'good' : 'bad', r.ok ? '✔ ALLOWED' : '✖ DENIED', tr(r.msg));
-    } catch (e) { show('bad', '✖', 'Connection failed. Check the internet and try again (do not assume the code was recorded).'); }
-    busy = false;
+    last.textContent = 'Checking...';
+    try { present(await api(Object.assign({ action: 'scan', code: code, day: S.day, preview: S.prev }, auth()), 20000)); }
+    catch (e) { flash('bad', 'NO CONNECTION', '', '', [], 'Check the internet and try again (do not assume the code was recorded).', 3500); }
+    busy = false; counts();
   }
   async function enterById(id) {
     if (busy) return; busy = true; save();
-    show('wait', '', 'Recording...');
     try {
       const r = await api(Object.assign({ action: 'enter', id: id, day: S.day, preview: S.prev }, auth()), 20000);
-      show(r.ok ? 'good' : 'bad', r.ok ? '✔ ALLOWED' : '✖ DENIED', tr(r.msg));
+      present(r);
       if (r.ok) { found.replaceChildren(); q.value = ''; }
-    } catch (e) { show('bad', '✖', 'Connection failed. Check the internet and try again (do not assume the entry was recorded).'); }
-    busy = false;
+    } catch (e) { flash('bad', 'NO CONNECTION', '', '', [], 'Check the internet and try again (do not assume the entry was recorded).', 3500); }
+    busy = false; counts();
   }
-  const camBtn = h('button', { onclick: async () => {
-    if (scanner) { stopCam(); $('#reader').innerHTML = ''; camBtn.textContent = 'Start camera to scan next'; return; }
-    try {
-      scanner = new Html5Qrcode('reader'); let last = '', lastAt = 0;
-      await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, text => {
-        const now = Date.now();
-        if (busy || (text === last && now - lastAt < 4000)) return;   // يتجاهل نفس الكود لو اتمسح تانى بسرعة
-        last = text; lastAt = now; check(tokenOf(text));
-      }, () => {});
-      camBtn.textContent = 'Stop camera';
-    } catch (e) { scanner = null; show('bad', '✖', 'Camera failed. Allow camera access in the browser.'); }
-  } }, 'Start camera to scan next');
+  const camBtn = h('button', { class: 'alt', onclick: () => toggleCam() }, 'Starting camera...');
+  async function toggleCam() {
+    if (scanner) { stopCam(); $('#reader').replaceChildren(); camBtn.textContent = 'Start camera'; return; }
+    const ok = await startCam(check, 'scan');
+    camBtn.textContent = ok ? 'Stop camera' : 'Start camera';
+    if (!ok) last.textContent = 'Camera failed. Allow camera access in the browser, then tap Start camera.';
+  }
   const q = h('input', { placeholder: 'Ticket number, phone (4+ digits) or name', autocomplete: 'off', onkeydown: e => { if (e.key === 'Enter') find(); } });
   const found = h('div', {});
   async function find() {
     const t = q.value.trim(); save();
-    if (t.length < 3 && !/^\d{1,3}$/.test(t)) return show('bad', '✖', 'Enter the ticket number, at least 4 phone digits, or 3 letters of the name');
+    if (t.length < 3 && !/^\d{1,3}$/.test(t)) return flash('bad', 'CHECK INPUT', '', '', [], 'Enter the ticket number, at least 4 phone digits, or 3 letters of the name', 2500);
     found.textContent = 'Searching...';
     try {
       const r = await api(Object.assign({ action: 'find', query: t }, auth()));
@@ -415,27 +627,32 @@ function scanView() {
       });
     } catch (e) { found.textContent = 'Connection failed. Check the internet and try again.'; }
   }
-  v.replaceChildren(res,
-    h('div', { class: 'box' }, h('div', { class: 'row' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day)), camBtn, h('div', { id: 'reader' }),
+  v.replaceChildren(kbar,
+    h('div', { class: 'box' }, h('div', { id: 'reader' }), last, camBtn,
+      h('div', { class: 'row', style: 'margin-top:10px' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day)),
       h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal' }, prev, 'Preview mode (do not record entry)')),
-    h('div', { class: 'box' }, h('label', { style: 'margin-top:0' }, "If the code doesn't work: search by phone or name"), q, h('button', { class: 'alt', onclick: find }, 'Search'), found,
-      h('p', { class: 'mut', style: 'font-size:.85rem;margin-bottom:0' }, "Compare the name with the person's ID before checking in.")));
+    h('div', { class: 'box' }, h('details', { class: 'man' }, h('summary', {}, "If the code doesn't work: search by number, phone or name"),
+      q, h('button', { class: 'alt', onclick: find }, 'Search'), found,
+      h('p', { class: 'mut', style: 'font-size:.85rem;margin-bottom:0' }, "Compare the name with the person's ID before checking in."))));
+  counts(); timer = setInterval(counts, 20000);
   // لو الصفحة اتفتحت من QR بكاميرا الموبايل العادية (?s=التوكن)
   if (S.urlToken) { const t = S.urlToken; S.urlToken = ''; history.replaceState(null, '', location.pathname); check(t); }
+  toggleCam();
 }
 
-
-// ---------- الباصات: تسجيل الركوب (ذهاب وعودة) ----------
+// ---------- الباصات: تسجيل الركوب (ذهاب وعودة) - وضع الكشك ----------
 function busView() {
   const v = $('#view');
   const st = { day: ls.get('bd') || 'Friday', dir: ls.get('bdir') || 'out', no: Number(ls.get('bn')) || 1, prev: ls.get('bp') === '1' };
   let stats = null;
-  const res = h('div', { id: 'res', class: 'box wait' }, 'Ready');
   const day = h('select', { onchange: changed }, h('option', { value: 'Friday' }, 'Friday'), h('option', { value: 'Saturday' }, 'Saturday'));
   const dir = h('select', { onchange: changed }, h('option', { value: 'out' }, 'Outbound trip'), h('option', { value: 'back' }, 'Return trip'));
   const prev = h('input', { type: 'checkbox', style: 'width:auto', onchange: save }); prev.checked = st.prev;
   day.value = st.day; dir.value = st.dir;
-  const grid = h('div', { class: 'busgrid' }), summary = h('div', { class: 'mut', style: 'margin-top:10px' });
+  const last = h('div', { class: 'last mut' }, 'Ready to scan');
+  const kt = h('div', { class: 'kt' }, '-'), kb = h('i', { style: 'width:0%' });
+  const kbar = h('div', { class: 'box kbar' }, kt, h('div', { class: 'bar' }, kb));
+  const grid = h('div', { class: 'busgrid' });
   const missingBox = h('div', {});
   function save() { st.day = day.value; st.dir = dir.value; st.prev = prev.checked; ls.put('bd', st.day); ls.put('bdir', st.dir); ls.put('bn', String(st.no)); ls.put('bp', st.prev ? '1' : '0'); }
   function changed() { save(); missingBox.replaceChildren(); refresh(); }
@@ -446,46 +663,43 @@ function busView() {
       return h('button', { class: 'busbtn' + (st.no === i + 1 ? ' on' : '') + (c >= cap ? ' full' : ''), onclick: () => { st.no = i + 1; save(); draw(); } },
         'Bus ' + (i + 1), h('small', {}, c + ' / ' + cap));
     }));
-    summary.textContent = stats ? 'Boarded: ' + stats.boarded + ' of ' + stats.expected + ' riders - not yet: ' + Math.max(0, stats.expected - stats.boarded) : '';
+    if (stats) {
+      kt.textContent = 'Boarded ' + stats.boarded + ' of ' + stats.expected;
+      kb.style.width = (stats.expected ? Math.min(100, Math.round(stats.boarded * 100 / stats.expected)) : 0) + '%';
+    }
   }
   async function refresh() {
-    try { const r = await api(Object.assign({ action: 'busStats', day: st.day, dir: st.dir }, auth())); if (r.ok) { stats = r.data; draw(); } } catch (e) {}
+    try { const r = await api(Object.assign({ action: 'busStats', day: st.day, dir: st.dir }, auth())); if (r.ok && S.tab === 'bus') { stats = r.data; draw(); } } catch (e) {}
   }
-  function show(cls, big, msg) {
-    res.className = 'box ' + cls; res.replaceChildren();
-    if (big) res.append(h('div', { class: 'big' }, big));
-    res.append(h('div', {}, msg));
-    if (cls === 'good' || cls === 'bad' || cls === 'warn') { beep(cls === 'warn' ? 'warn' : cls === 'good'); if (navigator.vibrate) navigator.vibrate(cls === 'good' ? 80 : cls === 'warn' ? [60, 40, 60] : [120, 60, 120]); }
+  function present(r) {
+    const chips = ['Bus ' + st.no, dEn(r.day || st.day), st.dir === 'out' ? 'Outbound' : 'Return']; if (st.prev) chips.push('PREVIEW - not recorded');
+    const kind = r.warn ? 'warn' : r.ok ? 'good' : 'bad';
+    flash(kind, r.warn ? 'ALREADY BOARDED' : r.ok ? 'BOARDED' : 'DENIED', r.name || '', r.serial || '', chips, kind === 'good' ? '' : tr(r.msg), kind === 'good' ? FLASH_OK_MS : FLASH_BAD_MS);
+    last.textContent = (kind === 'good' ? '✔ ' : kind === 'warn' ? '⚠ ' : '✖ ') + (r.name || tr(r.msg));
   }
   async function call(body, offline) {
     if (busy) return; busy = true; save();
-    show('wait', '', 'Checking...');
+    last.textContent = 'Checking...';
     try {
       const r = await api(Object.assign(body, { day: st.day, dir: st.dir, bus: st.no, preview: st.prev }, auth()), 20000);
-      show(r.warn ? 'warn' : r.ok ? 'good' : 'bad', r.warn ? '⚠ ALREADY BOARDED' : r.ok ? '✔ BOARDED' : '✖ DENIED', tr(r.msg));
+      present(r);
       if (r.ok && !st.prev) { found.replaceChildren(); q.value = ''; }
-      refresh();
-    } catch (e) { show('bad', '✖', offline); }
-    busy = false;
+    } catch (e) { flash('bad', 'NO CONNECTION', '', '', [], offline, 3500); }
+    busy = false; refresh();
   }
-  const check = code => call({ action: 'busScan', code: code }, 'Connection failed. Check the internet and try again (do not assume the boarding was recorded).');
-  const camBtn = h('button', { onclick: async () => {
-    if (scanner) { stopCam(); $('#reader').innerHTML = ''; camBtn.textContent = 'Start camera to scan next'; return; }
-    try {
-      scanner = new Html5Qrcode('reader'); let last = '', lastAt = 0;
-      await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 250 }, text => {
-        const now = Date.now();
-        if (busy || (text === last && now - lastAt < 4000)) return;
-        last = text; lastAt = now; check(tokenOf(text));
-      }, () => {});
-      camBtn.textContent = 'Stop camera';
-    } catch (e) { scanner = null; show('bad', '✖', 'Camera failed. Allow camera access in the browser.'); }
-  } }, 'Start camera to scan next');
+  const check = code => call({ action: 'busScan', code: code }, 'Check the internet and try again (do not assume the boarding was recorded).');
+  const camBtn = h('button', { class: 'alt', onclick: () => toggleCam() }, 'Starting camera...');
+  async function toggleCam() {
+    if (scanner) { stopCam(); $('#reader').replaceChildren(); camBtn.textContent = 'Start camera'; return; }
+    const ok = await startCam(check, 'bus');
+    camBtn.textContent = ok ? 'Stop camera' : 'Start camera';
+    if (!ok) last.textContent = 'Camera failed. Allow camera access in the browser, then tap Start camera.';
+  }
   const q = h('input', { placeholder: 'Ticket number, phone (4+ digits) or name', autocomplete: 'off', onkeydown: e => { if (e.key === 'Enter') find(); } });
   const found = h('div', {});
   async function find() {
     const t = q.value.trim();
-    if (t.length < 3 && !/^\d{1,3}$/.test(t)) return show('bad', '✖', 'Enter the ticket number, at least 4 phone digits, or 3 letters of the name');
+    if (t.length < 3 && !/^\d{1,3}$/.test(t)) return flash('bad', 'CHECK INPUT', '', '', [], 'Enter the ticket number, at least 4 phone digits, or 3 letters of the name', 2500);
     found.textContent = 'Searching...';
     try {
       const r = await api(Object.assign({ action: 'find', query: t }, auth()));
@@ -496,7 +710,7 @@ function busView() {
         const it = h('div', { class: 'found' }, h('b', {}, x.name), h('div', { class: 'mut' }, (x.serial ? '#' + x.serial + ' - ' : '') + dEn(x.dayLabel) + ' - ' + (x.bus ? 'Bus rider' : 'No bus') + ' - phone ends with ' + x.phoneEnd));
         if (!x.bus) it.append(h('div', { class: 'err' }, 'Not registered for the bus'));
         else if (x.day !== st.day) it.append(h('div', { class: 'err' }, 'Ticket is for ' + dEn(x.dayLabel)));
-        else it.append(h('button', { onclick: () => call({ action: 'busEnter', id: x.id }, 'Connection failed. Check the internet and try again (do not assume the boarding was recorded).') }, 'Board bus ' + st.no));
+        else it.append(h('button', { onclick: () => call({ action: 'busEnter', id: x.id }, 'Check the internet and try again (do not assume the boarding was recorded).') }, 'Board bus ' + st.no));
         found.append(it);
       });
     } catch (e) { found.textContent = 'Connection failed. Check the internet and try again.'; }
@@ -515,13 +729,14 @@ function busView() {
     } catch (e) { missingBox.textContent = errMsg(e); }
     missBtn.disabled = false;
   } }, "Who hasn't boarded yet?");
-  v.replaceChildren(res,
-    h('div', { class: 'box' }, h('div', { class: 'row' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day), h('div', {}, h('label', { style: 'margin-top:0' }, 'Trip'), dir)),
-      grid, summary, camBtn, h('div', { id: 'reader' }),
+  v.replaceChildren(kbar,
+    h('div', { class: 'box' }, grid, h('div', { id: 'reader' }), last, camBtn,
+      h('div', { class: 'row', style: 'margin-top:10px' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day), h('div', {}, h('label', { style: 'margin-top:0' }, 'Trip'), dir)),
       h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal' }, prev, 'Preview mode (do not record boarding)')),
-    h('div', { class: 'box' }, h('label', { style: 'margin-top:0' }, "If the code doesn't work: search by phone or name"), q, h('button', { class: 'alt', onclick: find }, 'Search'), found),
+    h('div', { class: 'box' }, h('details', { class: 'man' }, h('summary', {}, "If the code doesn't work: search by number, phone or name"), q, h('button', { class: 'alt', onclick: find }, 'Search'), found)),
     ...(S.role === 'admin' ? [h('div', { class: 'box' }, missBtn, missingBox)] : []));
-  draw(); refresh();
+  draw(); refresh(); timer = setInterval(refresh, 20000);
+  toggleCam();
 }
 
 // ---------- التشغيل ----------
