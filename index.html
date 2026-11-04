@@ -99,6 +99,9 @@ details.man>summary{cursor:pointer;font-weight:bold;padding:4px 0}
 .alert.bad{background:#fbe0e0;color:#a11}.alert.warn{background:#fff3cd;color:#8a6d00}.alert.good{background:#d9f3e1;color:#176b35;cursor:default}
 .bgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-top:4px}
 .bm{text-align:center}.bm .bar{margin:2px 0}
+#pr{display:none}
+@media print{html,body{height:auto;background:#fff}body.printing #app,body.printing #toast,body.printing .ov,body.printing .flash{display:none!important}body.printing #pr{display:block}
+.prb{page-break-after:always;padding:8mm}.prb h2{margin:0 0 8px;font-size:16pt}.ptbl{width:100%;border-collapse:collapse;font-size:11pt}.ptbl th,.ptbl td{border:1px solid #999;padding:4px 6px;text-align:left}}
 </style></head><body>
 <div id="app"></div><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
@@ -154,7 +157,7 @@ const ago = ms => { if (!ms) return ''; const m = Math.max(0, Math.floor((Date.n
 const hrsSince = ms => ms ? (Date.now() - ms) / 3600000 : 0;
 const fillColor = (p, warn, full) => p >= full ? '#c0392b' : p >= warn ? '#e0a800' : '#2e6b52';
 
-const S = { role: '', cred: '', tab: '', day: ls.get('sd') || 'Friday', prev: ls.get('sp') === '1', f: { status: 'review', q: '', day: '', page: 1 }, urlToken: new URLSearchParams(location.search).get('s') || '' };
+const S = { role: '', cred: '', user: '', tab: '', day: ls.get('sd') || 'Friday', prev: ls.get('sp') === '1', f: { status: 'review', q: '', day: '', page: 1 }, urlToken: new URLSearchParams(location.search).get('s') || '' };
 let timer = null, scanner = null, busy = false, flashing = false, qKeyH = null;
 
 // ---------- الاتصال بالسيرفر ----------
@@ -244,7 +247,7 @@ function loginView(msg) {
   const draw = () => { seg.replaceChildren(
     h('button', { class: role === 'admin' ? 'on' : '', onclick: () => { role = 'admin'; draw(); } }, 'Admin'),
     h('button', { class: role === 'security' ? 'on' : '', onclick: () => { role = 'security'; draw(); } }, 'Security (scanner)'));
-    inp.placeholder = role === 'admin' ? 'Admin password' : 'Scanner key'; };
+    inp.placeholder = role === 'admin' ? 'Your PIN (or admin password)' : 'Scanner key'; };
   draw();
   const btn = h('button', { onclick: () => go() }, 'Sign in');
   async function go() {
@@ -258,18 +261,18 @@ function loginView(msg) {
 }
 async function login(role, cred) {
   S.role = role; S.cred = cred;
-  if (role === 'admin') await adm('adminLogin');
-  else { const r = await api({ action: 'find', key: cred, query: 'x' }); if (!r.ok) throw new Error(r.msg || 'مفتاح غير صحيح'); }
+  if (role === 'admin') { const u = await adm('adminLogin'); S.user = typeof u === 'string' ? u : ''; }
+  else { S.user = ''; const r = await api({ action: 'find', key: cred, query: 'x' }); if (!r.ok) throw new Error(r.msg || 'مفتاح غير صحيح'); }
   ls.put('role', role); ls.put('cred', cred);
   start();
 }
-function logout() { ls.del('cred'); S.role = ''; S.cred = ''; stopCam(); clearInterval(timer); loginView(); }
+function logout() { ls.del('cred'); S.role = ''; S.cred = ''; S.user = ''; stopCam(); clearInterval(timer); loginView(); }
 
 // ---------- الهيكل ----------
 function start() {
   const tabs = S.role === 'admin' ? [['home', '📊', 'Dashboard'], ['queue', '✅', 'Review'], ['orders', '📋', 'Orders'], ['scan', '📷', 'Gate'], ['bus', '🚌', 'Bus']] : [['scan', '📷', 'Gate'], ['bus', '🚌', 'Bus']];
   const nav = h('nav', {}, ...tabs.map(t => h('button', { id: 'n-' + t[0], onclick: () => go(t[0]) }, h('b', {}, t[1]), t[2])));
-  const hd = h('header', {}, h('h1', {}, EVENT), h('button', { onclick: () => go(S.tab, true) }, 'Refresh'), h('button', { onclick: logout }, 'Log out'));
+  const hd = h('header', {}, h('h1', {}, EVENT, S.user ? h('small', { style: 'font-weight:normal;opacity:.8' }, ' · ' + S.user) : null), h('button', { onclick: () => go(S.tab, true) }, 'Refresh'), h('button', { onclick: logout }, 'Log out'));
   $('#app').replaceChildren(hd, h('div', { id: 'view' }), nav);
   go(S.urlToken ? 'scan' : tabs[0][0]);
 }
@@ -347,10 +350,45 @@ function homeView() {
         ...rp.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + dEn(r.day) + ' - entered ' + fmtTime(r.first) + ', scanned again ' + fmtTime(r.at)))));
       const recent = h('div', { class: 'box' }, h('h3', { style: 'margin:0 0 6px' }, 'Latest check-ins'),
         ...(d.recent.length ? d.recent.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + dEn(r.day) + ' - ' + fmtTime(r.at)))) : [h('p', { class: 'mut' }, 'No one has checked in yet')]));
-      v.replaceChildren(alerts, ...days, h('div', { class: 'box' }, chips), recent, ...(rp.length ? [repeats] : []), h('p', { class: 'mut', style: 'text-align:center;font-size:.8rem' }, 'Auto-refreshes every 15 s - last update ' + fmtTime(Date.now())));
+      v.replaceChildren(alerts, ...days, h('div', { class: 'box' }, chips), recent, getActBox(), ...(rp.length ? [repeats] : []), h('p', { class: 'mut', style: 'text-align:center;font-size:.8rem' }, 'Auto-refreshes every 15 s - last update ' + fmtTime(Date.now())));
     } catch (e) { v.replaceChildren(h('p', { class: 'err' }, errMsg(e))); }
   };
   load(); timer = setInterval(load, 15000);
+}
+
+// ---------- سجل نشاط الفريق (مين قبل / رفض مين ومتى) ----------
+let actBox = null;
+function getActBox() {
+  if (actBox) return actBox;   // نفس العنصر بيفضل زى ما هو مع تحديث الرئيسية كل 15 ثانية
+  const SN = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected' };
+  const list = h('div', {}); let t = null;
+  const load = async () => {
+    list.textContent = 'Loading...';
+    try {
+      const d = await adm('adminAudit', { q: q.value, limit: 100 });
+      list.replaceChildren(...(d.length ? d.map(x => h('div', { style: 'padding:7px 0;border-bottom:1px solid #eee;font-size:.9rem' },
+        h('b', { dir: 'auto' }, x.who), ' - ' + x.action + ': ', h('b', { dir: 'auto' }, (x.serial ? '#' + x.serial + ' ' : '') + (x.name || '')),
+        (x.from || x.to) ? ' (' + (SN[x.from] || x.from || '-') + ' → ' + (SN[x.to] || x.to || '-') + ')' : '',
+        h('div', { class: 'mut', style: 'font-size:.75rem' }, x.at ? new Date(x.at).toLocaleString('en-GB') : ''))) : [h('p', { class: 'mut' }, 'No activity recorded yet')]));
+    } catch (e) { list.replaceChildren(h('p', { class: 'err' }, errMsg(e))); }
+  };
+  const q = h('input', { placeholder: 'Search by team member, name or serial', oninput: () => { clearTimeout(t); t = setTimeout(load, 400); } });
+  const d = h('details', { class: 'box man', ontoggle: () => { if (d.open) load(); } }, h('summary', {}, '🕑 Team activity (who approved / rejected)'), q, h('button', { class: 'ghost', onclick: load }, 'Refresh'), list);
+  return actBox = d;
+}
+
+// ---------- طباعة قوايم الباصات ----------
+function printBuses(items, headFn) {
+  document.querySelectorAll('#pr').forEach(x => x.remove());
+  const pr = h('div', { id: 'pr' }, ...items.map(b => h('div', { class: 'prb' }, h('h2', {}, headFn(b)),
+    h('table', { class: 'ptbl' }, h('thead', {}, h('tr', {}, ...['#', 'Serial', 'Name', 'Phone', 'Group', 'Boarded'].map(x => h('th', {}, x)))),
+      h('tbody', {}, ...b.list.map((x, i) => h('tr', {}, h('td', {}, String(i + 1)), h('td', {}, String(x.serial)), h('td', { dir: 'auto' }, x.name),
+        h('td', { style: 'direction:ltr' }, x.phone), h('td', { dir: 'auto' }, x.group || ''), h('td', {}, x.time ? fmtTime(x.time) : ''))))))));
+  document.body.append(pr); document.body.classList.add('printing');
+  const done = () => { document.body.classList.remove('printing'); pr.remove(); window.removeEventListener('afterprint', done); };
+  window.addEventListener('afterprint', done);
+  setTimeout(done, 120000);   // احتياطى لو afterprint ماشتغلش (بعض الموبايلات)
+  setTimeout(() => window.print(), 80);
 }
 
 // ---------- طابور المراجعة: طلب واحد فى كل مرة ----------
@@ -631,7 +669,7 @@ function scanView() {
     h('div', { class: 'box' }, h('div', { id: 'reader' }), last, camBtn,
       h('div', { class: 'row', style: 'margin-top:10px' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day)),
       h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal' }, prev, 'Preview mode (do not record entry)')),
-    h('div', { class: 'box' }, h('details', { class: 'man' }, h('summary', {}, "If the code doesn't work: search by serial number, phone or name"),
+    h('div', { class: 'box' }, h('details', { class: 'man' }, h('summary', {}, "If the code doesn't work: search by number, phone or name"),
       q, h('button', { class: 'alt', onclick: find }, 'Search'), found,
       h('p', { class: 'mut', style: 'font-size:.85rem;margin-bottom:0' }, "Compare the name with the person's ID before checking in."))));
   counts(); timer = setInterval(counts, 20000);
@@ -715,6 +753,28 @@ function busView() {
       });
     } catch (e) { found.textContent = 'Connection failed. Check the internet and try again.'; }
   }
+  const listsBox = h('div', {});
+  const listsBtn = h('button', { class: 'alt', onclick: async () => {
+    listsBtn.disabled = true; listsBox.textContent = 'Loading...';
+    try {
+      const d = await adm('adminBusLists', { day: st.day, dir: st.dir });
+      const trip = st.dir === 'out' ? 'outbound' : 'return';
+      const head = b => EVENT + ' - ' + st.day + ' ' + trip + ' - Bus ' + b.bus + ' (' + b.list.length + '/' + d.cap + ')';
+      const text = b => head(b) + '\n' + b.list.map((x, i) => (i + 1) + '. #' + x.serial + ' ' + x.name + (x.phone ? ' - ' + x.phone : '')).join('\n');
+      const share = async b => {
+        const t = text(b);
+        try { if (navigator.share) { await navigator.share({ text: t }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+        try { await navigator.clipboard.writeText(t); toast('Copied - paste it in WhatsApp', 4000); } catch (e) { window.prompt('Copy:', t); }
+      };
+      const used = d.buses.filter(b => b.list.length);
+      listsBox.replaceChildren(
+        used.length ? h('button', { onclick: () => printBuses(used, head) }, 'Print all buses (' + used.length + ')') : h('p', { class: 'mut' }, 'No one has boarded yet for this day and trip'),
+        ...used.map(b => h('div', { class: 'found' }, h('b', {}, 'Bus ' + b.bus + ' - ' + b.list.length + ' / ' + d.cap),
+          h('div', { class: 'acts' }, h('button', { class: 'b ghost', onclick: () => printBuses([b], head) }, 'Print'), h('button', { class: 'b wa', onclick: () => share(b) }, 'Share (WhatsApp)')),
+          h('div', { class: 'mut', style: 'font-size:.85rem;margin-top:6px', dir: 'auto' }, b.list.map(x => '#' + x.serial + ' ' + x.name).join(' - ')))));
+    } catch (e) { listsBox.textContent = errMsg(e); }
+    listsBtn.disabled = false;
+  } }, 'Bus lists (print / share) for the selected day & trip');
   const missBtn = h('button', { class: 'alt', onclick: async () => {
     missBtn.disabled = true; missingBox.textContent = 'Loading...';
     try {
@@ -733,8 +793,8 @@ function busView() {
     h('div', { class: 'box' }, grid, h('div', { id: 'reader' }), last, camBtn,
       h('div', { class: 'row', style: 'margin-top:10px' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day), h('div', {}, h('label', { style: 'margin-top:0' }, 'Trip'), dir)),
       h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal' }, prev, 'Preview mode (do not record boarding)')),
-    h('div', { class: 'box' }, h('details', { class: 'man' }, h('summary', {}, "If the code doesn't work: search by serial number, phone or name"), q, h('button', { class: 'alt', onclick: find }, 'Search'), found)),
-    ...(S.role === 'admin' ? [h('div', { class: 'box' }, missBtn, missingBox)] : []));
+    h('div', { class: 'box' }, h('details', { class: 'man' }, h('summary', {}, "If the code doesn't work: search by number, phone or name"), q, h('button', { class: 'alt', onclick: find }, 'Search'), found)),
+    ...(S.role === 'admin' ? [h('div', { class: 'box' }, missBtn, missingBox), h('div', { class: 'box' }, listsBtn, listsBox)] : []));
   draw(); refresh(); timer = setInterval(refresh, 20000);
   toggleCam();
 }
