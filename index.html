@@ -30,16 +30,16 @@ label{display:block;margin:10px 0 4px;font-weight:bold}
 .err{color:#a11;font-weight:bold}.ok{color:#176b35;font-weight:bold}.mut{color:var(--mut)}
 .item{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 4px #0001}
 .st{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:bold;font-size:.8rem}
-.st-review{background:#FFA726}.st-pending{background:#FFF176}.st-approved{background:#81C784}.st-rejected{background:#E57373}
+.st-review{background:#FFA726}.st-pending{background:#FFF176}.st-approved{background:#81C784}.st-rejected{background:#E57373}.st-cancelled{background:#CFD8DC;color:#37474F}
 .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .b{width:auto;flex:1;min-width:110px;margin:0;padding:9px 10px;font-size:.88rem;text-align:center;text-decoration:none;border-radius:9px;background:var(--g);color:#fff;font-weight:bold;border:0}
-.b.ghost{background:#e8e6e1;color:var(--tx)}.b.red{background:#8a2b2b}.b.wa{background:#25d366}
+.b.ghost{background:#e8e6e1;color:var(--tx)}.b.red{background:#8a2b2b}.b.warn{background:#b45309;color:#fff}.b.wa{background:#25d366}
 .tw{overflow-x:auto;background:#fff;border-radius:14px;box-shadow:0 1px 4px #0001}
 .tbl{width:100%;border-collapse:collapse;font-size:.88rem}
 .tbl th{background:var(--g);color:#fff;text-align:left;padding:10px 12px;white-space:nowrap;font-weight:600}
 .tbl td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:middle;text-align:left}
 .tbl tbody tr:nth-child(even) td{background:#faf8f3}.tbl tbody tr:hover td{background:#f0ede5}
-.tbl td.actd{min-width:300px}
+.tbl td.actd{min-width:340px}
 .tbl .st{white-space:nowrap}
 .tbl .acts{margin:0;gap:4px;justify-content:flex-start}
 .tbl .b{flex:none;min-width:0;padding:6px 10px;font-size:.78rem;border-radius:7px}
@@ -106,21 +106,19 @@ details.man>summary{cursor:pointer;font-weight:bold;padding:4px 0}
 <div id="app"></div><div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script>
-// ======= رابط الـ Web app بتاع Apps Script (اللى بينتهى بـ /exec) =======
 const APP_URL = 'https://script.google.com/macros/s/AKfycbzhOG6LUUf8TcIw6Hal3r6waD5HkAUV_uSf0IWS7qwVT5nMCD4Q3MgubraayKBfIJayrA/exec';
 const EVENT = 'Together 11';
-// ======= حدود التنبيهات (عدّلها براحتك) =======
-const WARN_PCT = 85, FULL_PCT = 95;        // امتلاء اليوم: أصفر من 85%، أحمر من 95%
-const BUS_WARN_PCT = 90, BUS_FULL_PCT = 100; // امتلاء الباص: أصفر من 90% (45 من 50)، أحمر عند الامتلاء
-const RECEIPT_WARN_H = 3;                  // إيصال مستنى تأكيد أكتر من كده (ساعات) يطلع تنبيه
-const REVIEW_WARN_H = 12;                  // بطاقة مستنية مراجعة أكتر من كده (ساعات) تطلع تنبيه
-const FLASH_OK_MS = 2000, FLASH_BAD_MS = 3200;   // مدة ظهور شاشة النتيجة فى السكانر
+const WARN_PCT = 85, FULL_PCT = 95;
+const BUS_WARN_PCT = 90, BUS_FULL_PCT = 100;
+const RECEIPT_WARN_H = 3;
+const REVIEW_WARN_H = 12;
+const FLASH_OK_MS = 2000, FLASH_BAD_MS = 3200;
 
 const $ = s => document.querySelector(s);
 const ls = { get: k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, put: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: k => { try { localStorage.removeItem(k); } catch (e) {} } };
 function h(t, a, ...c) { const e = document.createElement(t); for (const k in a || {}) { if (k.startsWith('on')) e[k] = a[k]; else if (a[k] != null) e.setAttribute(k, a[k]); } e.append(...c.flat().filter(x => x != null)); return e; }
 const errMsg = e => tr((e && e.message ? e.message : String(e)).replace(/^Error:\s*/, ''));
-// ---- ترجمة رسائل السيرفر للإنجليزى ----
+
 const DAY_EN = { 'الجمعة': 'Friday', 'السبت': 'Saturday' };
 const dEn = x => DAY_EN[x] || x;
 const latin = t => String(t).replace(/[٠-٩]/g, c => '٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/م/g, 'PM').replace(/ص/g, 'AM');
@@ -128,25 +126,24 @@ const MSG = [
   [/^الباسورد غلط$/, 'Wrong password'], [/^مفتاح غير صحيح$/, 'Invalid key'], [/^كود غير صالح$/, 'Invalid code'], [/^تذكرة غير صالحة$/, 'Invalid ticket'],
   [/^اليوم غير صحيح$/, 'Invalid day'], [/^اختار اليوم$/, 'Choose a day'], [/^خطأ فى الطلب$/, 'Request error'], [/^أمر غير معروف$/, 'Unknown command'],
   [/^غير موجود$/, 'Not found'], [/^التذكرة مستخدمة$/, 'Ticket already used'], [/^الطلب مش فى المرحلة دى$/, 'Request is not at this stage'],
-  [/^اليوم اكتمل العدد$/, 'This day is full'], [/^لا توجد صورة$/, 'No image'], [/^لا توجد صورة تحويل$/, 'No transfer receipt'], [/^مفيش إيميل لإعادة إرساله$/, 'Nothing to resend'],
+  [/^اليوم اكتمل العدد$/, 'This day is full'], [/^لا توجد صورة$/, 'No image'], [/^لا توجد صورة تحويل$/, 'No transfer receipt'],
   [/^الكود ليوم (.+)$/, m => 'Code is for ' + dEn(m[1])], [/^التذكرة ليوم (.+)$/, m => 'Ticket is for ' + dEn(m[1])],
   [/^الكود مستخدم قبل كده: (.*) \((.*)\)$/, m => 'Code already used - entered: ' + m[1] + ' (' + latin(m[2]) + ')'],
   [/^الكود مستخدم قبل كده \((.*)\)$/, m => 'Code already used (' + latin(m[1]) + ')'], [/^دخل قبل كده \((.*)\)$/, m => 'Already checked in (' + latin(m[1]) + ')'],
   [/^مسموح بالدخول: (.*)$/, m => 'Entry allowed: ' + m[1]], [/^صالح \(معاينة، لم يُسجَّل الدخول\): (.*)$/, m => 'Valid (preview, entry not recorded): ' + m[1]],
-  [/^تم التأكيد لكن الإيميل لم يُرسل \((.*?)\)\./, m => 'Confirmed, but the email was not sent (' + m[1] + '). Use the WhatsApp button or Resend later.'],
-  [/^انتهى حد الإيميلات اليومى$/, 'Daily email limit reached'],
   [/^ركب الباص (\d+) \((\d+\/\d+)\): (.*)$/, m => 'Boarded bus ' + m[1] + ' (' + m[2] + '): ' + m[3]],
   [/^صالح للباص \(معاينة، لم يُسجَّل\): (.*)$/, m => 'Valid for the bus (preview, not recorded): ' + m[1]],
   [/^مش مسجل باص: (.*)$/, m => 'Not registered for the bus: ' + m[1]],
   [/^تنبيه: ركب قبل كده فى الباص (\d+) \((.*)\)$/, m => 'Warning: already boarded bus ' + m[1] + ' (' + latin(m[2]) + ')'],
-  [/^ركب قبل كده فى الباص (\d+) \((.*)\)$/, m => 'Already boarded bus ' + m[1] + ' (' + latin(m[2]) + ')'],
   [/^الباص (\d+) اتملى \((\d+\/\d+)\)$/, m => 'Bus ' + m[1] + ' is full (' + m[2] + ')'],
   [/^اختار رقم الباص$/, 'Choose a bus number'], [/^اتجاه غير صحيح$/, 'Invalid direction'],
   [/^مفيش أعضاء فى المرحلة دى$/, 'No group members at this stage'],
-  // ---- تصحيح الحالة ----
   [/^حالة غير معروفة$/, 'Unknown status'], [/^طريقة دفع غير معروفة$/, 'Unknown payment method'], [/^الطلب بالفعل فى الحالة دى$/, 'Already in this status'],
   [/^كلهم بالفعل فى الحالة دى$/, 'All members are already in this status'], [/^المجموعة غير موجودة$/, 'Group not found'],
   [/^التذكرة مستخدمة \(دخل الايفنت\): (.*)$/, m => 'Ticket already used (checked in): ' + m[1] + '. Cannot change its status'],
+  [/^الحجز ملغي أو مرفوض بالفعل$/, 'Booking is already cancelled or rejected'],
+  [/^الشخص غير مسجل في الباص أصلاً$/, 'Person is not registered for the bus'],
+  [/^لا يمكن إلغاء الباص: سجل ركوب الباص بالفعل$/, 'Cannot cancel bus: already boarded the bus'],
   [/^تم (\d+) وتم تخطى (\d+) \((.*)\)$/, m => 'Done ' + m[1] + ', skipped ' + m[2] + ' (' + tr(m[3]) + ')'],
   [/^تم (\d+) وتم تخطى (\d+) لاكتمال العدد$/, m => 'Done ' + m[1] + ', skipped ' + m[2] + ' (day full)'],
 ];
@@ -160,7 +157,6 @@ const fillColor = (p, warn, full) => p >= full ? '#c0392b' : p >= warn ? '#e0a80
 const S = { role: '', cred: '', user: '', master: false, tab: '', day: ls.get('sd') || 'Friday', prev: ls.get('sp') === '1', f: { status: 'review', q: '', day: '', page: 1 }, urlToken: new URLSearchParams(location.search).get('s') || '' };
 let timer = null, scanner = null, busy = false, flashing = false, qKeyH = null;
 
-// ---------- الاتصال بالسيرفر ----------
 async function api(body, ms) {
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), ms || 25000);
   try {
@@ -175,7 +171,6 @@ async function adm(action, extra) {
   return r.data;
 }
 
-// ---------- أدوات واجهة ----------
 function toast(msg, ms, link) {
   const t = h('div', { class: 'tt' }, msg, link ? h('a', { href: link, target: '_blank', rel: 'noopener' }, ' Open WhatsApp') : null);
   $('#toast').append(t); setTimeout(() => t.remove(), ms || (link ? 9000 : 3500));
@@ -196,8 +191,6 @@ function modal(src, cap) {
 }
 const fmtTime = ms => new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
-// ---------- شاشة النتيجة الكبيرة (للسكانر) ----------
-// kind: good | bad | warn. بتختفى لوحدها وبتجهز للمسح اللى بعده. لمسة على الشاشة تقفلها فوراً.
 function flash(kind, title, name, serial, chips, msg, ms) {
   if (kind === 'good') { beep(true); if (navigator.vibrate) navigator.vibrate(80); }
   else if (kind === 'warn') { beep('warn'); if (navigator.vibrate) navigator.vibrate([60, 40, 60]); }
@@ -217,7 +210,6 @@ function flash(kind, title, name, serial, chips, msg, ms) {
   setTimeout(close, ms || (kind === 'good' ? FLASH_OK_MS : FLASH_BAD_MS));
 }
 
-// ---------- الكاميرا (بتفتح لوحدها) ----------
 function stopCam() {
   if (!scanner) return;
   const s = scanner; scanner = null;
@@ -230,7 +222,7 @@ async function startCam(onCode, tab) {
     const sc = new Html5Qrcode('reader'); scanner = sc; let last = '', lastAt = 0;
     await sc.start({ facingMode: 'environment' }, { fps: 10, qrbox: (w, hh) => { const s = Math.floor(Math.min(w, hh) * 0.7); return { width: s, height: s }; } }, text => {
       const now = Date.now();
-      if (busy || flashing || (text === last && now - lastAt < 4000)) return;   // يتجاهل نفس الكود لو اتمسح تانى بسرعة
+      if (busy || flashing || (text === last && now - lastAt < 4000)) return;
       last = text; lastAt = now; onCode(tokenOf(text));
     }, () => {});
     if (S.tab !== tab) stopCam();
@@ -238,7 +230,6 @@ async function startCam(onCode, tab) {
   } catch (e) { scanner = null; return false; }
 }
 
-// ---------- تسجيل الدخول ----------
 function loginView(msg) {
   let role = ls.get('role') || 'admin';
   const inp = h('input', { type: 'password', autocomplete: 'off', placeholder: 'Password', onkeydown: e => { if (e.key === 'Enter') go(); } });
@@ -268,7 +259,6 @@ async function login(role, cred) {
 }
 function logout() { ls.del('cred'); S.role = ''; S.cred = ''; S.user = ''; S.master = false; stopCam(); clearInterval(timer); loginView(); }
 
-// ---------- الهيكل ----------
 function start() {
   const tabs = S.role === 'admin' ? [['home', '📊', 'Dashboard'], ['queue', '✅', 'Review'], ['orders', '📋', 'Orders'], ['scan', '📷', 'Gate'], ['bus', '🚌', 'Bus']] : [['scan', '📷', 'Gate'], ['bus', '🚌', 'Bus']];
   const nav = h('nav', {}, ...tabs.map(t => h('button', { id: 'n-' + t[0], onclick: () => go(t[0]) }, h('b', {}, t[1]), t[2])));
@@ -284,11 +274,11 @@ function go(tab, force) {
   S.tab = tab;
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.id === 'n-' + tab));
   window.scrollTo(0, 0);
-  $('#app').style.maxWidth = tab === 'orders' ? '1500px' : '1100px';
+  $('#app').style.maxWidth = tab === 'orders' ? '1560px' : '1100px';
   ({ home: homeView, queue: queueView, orders: ordersView, scan: scanView, bus: busView })[tab]();
 }
 
-// ---------- الرئيسية (إحصائيات حية + تنبيهات) ----------
+// ---------- الرئيسية ----------
 function homeView() {
   const v = $('#view'); v.replaceChildren(h('p', { class: 'mut' }, 'Loading...'));
   const load = async () => {
@@ -297,7 +287,6 @@ function homeView() {
       if (S.tab !== 'home') return;
       const cfg = d.busCfg || null, Q = d.queue || null;
 
-      // ----- تنبيهات -----
       const al = [];
       const A = (lvl, txt, fn) => al.push(h('div', { class: 'alert ' + lvl, onclick: fn || null }, txt));
       if (Q) {
@@ -324,7 +313,6 @@ function homeView() {
       });
       const alerts = al.length ? h('div', {}, ...al) : h('div', { class: 'alert good' }, '✔ No alerts - everything looks normal');
 
-      // ----- كروت الأيام -----
       const busRows = k => {
         if (!cfg || !d.bus || !d.bus[k]) return null;
         return h('div', { style: 'margin-top:12px' }, h('b', {}, 'Bus fill'),
@@ -343,8 +331,8 @@ function homeView() {
           h('p', { class: 'mut', style: 'margin:0' }, 'Confirmed seats: ' + x.approved + ' of ' + x.capacity + ' (' + cap + '%)'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, cap) + '%;background:' + fillColor(cap, WARN_PCT, FULL_PCT) })),
           busRows(k));
       });
-      const st = d.status, L = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected' };
-      const chips = h('div', { class: 'chips' }, ...Object.keys(L).map(k => h('span', { class: 'chip' }, h('span', { class: 'st st-' + k, style: 'margin-left:6px' }, L[k]), String(st[k] || 0))), h('span', { class: 'chip' }, 'All requests: ' + d.total));
+      const st = d.status, L = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected', cancelled: 'Cancelled' };
+      const chips = h('div', { class: 'chips' }, ...Object.keys(L).map(k => h('span', { class: 'chip' }, h('span', { class: 'st st-' + k, style: 'margin-right:6px' }, L[k]), String(st[k] || 0))), h('span', { class: 'chip' }, 'All requests: ' + d.total));
       const rp = d.repeats || [];
       const repeats = h('div', { class: 'box' }, h('h3', { style: 'margin:0 0 6px' }, 'Repeated QR scans at the gate'),
         ...rp.map(r => h('div', { style: 'padding:6px 0;border-bottom:1px solid #eee' }, h('b', {}, r.name), h('span', { class: 'mut' }, ' - ' + dEn(r.day) + ' - entered ' + fmtTime(r.first) + ', scanned again ' + fmtTime(r.at)))));
@@ -356,11 +344,10 @@ function homeView() {
   load(); timer = setInterval(load, 15000);
 }
 
-// ---------- سجل نشاط الفريق (مين قبل / رفض مين ومتى) ----------
-let actBox = null;   // بيظهر للأدمن الرئيسى بس (والسيرفر كمان بيرفض غيره)
+let actBox = null;
 function getActBox() {
-  if (actBox) return actBox;   // نفس العنصر بيفضل زى ما هو مع تحديث الرئيسية كل 15 ثانية
-  const SN = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected' };
+  if (actBox) return actBox;
+  const SN = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected', cancelled: 'Cancelled' };
   const list = h('div', {}); let t = null;
   const load = async () => {
     list.textContent = 'Loading...';
@@ -369,15 +356,15 @@ function getActBox() {
       list.replaceChildren(...(d.length ? d.map(x => h('div', { style: 'padding:7px 0;border-bottom:1px solid #eee;font-size:.9rem' },
         h('b', { dir: 'auto' }, x.who), ' - ' + x.action + ': ', h('b', { dir: 'auto' }, (x.serial ? '#' + x.serial + ' ' : '') + (x.name || '')),
         (x.from || x.to) ? ' (' + (SN[x.from] || x.from || '-') + ' → ' + (SN[x.to] || x.to || '-') + ')' : '',
+        x.note ? h('span', { class: 'err', style: 'margin-left:6px;font-size:.82rem' }, '[' + x.note + ']') : null,
         h('div', { class: 'mut', style: 'font-size:.75rem' }, x.at ? new Date(x.at).toLocaleString('en-GB') : ''))) : [h('p', { class: 'mut' }, 'No activity recorded yet')]));
     } catch (e) { list.replaceChildren(h('p', { class: 'err' }, errMsg(e))); }
   };
   const q = h('input', { placeholder: 'Search by team member, name or serial', oninput: () => { clearTimeout(t); t = setTimeout(load, 400); } });
-  const d = h('details', { class: 'box man', ontoggle: () => { if (d.open) load(); } }, h('summary', {}, '🕑 Team activity (who approved / rejected)'), q, h('button', { class: 'ghost', onclick: load }, 'Refresh'), list);
+  const d = h('details', { class: 'box man', ontoggle: () => { if (d.open) load(); } }, h('summary', {}, '🕑 Team activity (who approved / rejected / cancelled)'), q, h('button', { class: 'ghost', onclick: load }, 'Refresh'), list);
   return actBox = d;
 }
 
-// ---------- طباعة قوايم الباصات ----------
 function printBuses(items, headFn) {
   document.querySelectorAll('#pr').forEach(x => x.remove());
   const pr = h('div', { id: 'pr' }, ...items.map(b => h('div', { class: 'prb' }, h('h2', {}, headFn(b)),
@@ -387,11 +374,11 @@ function printBuses(items, headFn) {
   document.body.append(pr); document.body.classList.add('printing');
   const done = () => { document.body.classList.remove('printing'); pr.remove(); window.removeEventListener('afterprint', done); };
   window.addEventListener('afterprint', done);
-  setTimeout(done, 120000);   // احتياطى لو afterprint ماشتغلش (بعض الموبايلات)
+  setTimeout(done, 120000);
   setTimeout(() => window.print(), 80);
 }
 
-// ---------- طابور المراجعة: طلب واحد فى كل مرة ----------
+// ---------- طابور المراجعة ----------
 const QS = { mode: 'review', items: [], i: 0, cache: {}, wa: ls.get('qwa') !== '0' };
 function queueView() {
   const v = $('#view');
@@ -404,7 +391,7 @@ function queueView() {
   async function loadList() {
     body.replaceChildren(h('p', { class: 'mut' }, 'Loading...'));
     try {
-      const d = await adm('adminList', { filter: QS.mode, q: '', page: 1, day: '', asc: true });   // الأقدم الأول
+      const d = await adm('adminList', { filter: QS.mode, q: '', page: 1, day: '', asc: true });
       counts.review = d.counts.review || 0; counts.receipt = d.counts.receipt || 0;
       QS.items = d.rows; QS.i = 0; QS.cache = {}; drawSeg(); showItem();
     } catch (e) { body.replaceChildren(h('p', { class: 'err' }, errMsg(e))); }
@@ -444,7 +431,7 @@ function queueView() {
         h('button', { class: 'qbig sk', onclick: next }, 'Skip → (S)')),
       grp ? h('button', { class: 'ghost', onclick: () => decide('approve', true) }, rev ? 'Approve all ' + r.gr + ' cards in this group' : 'Confirm payment for all ' + r.gp + ' in this group') : null,
       h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal;margin-top:12px' }, chk, 'Open WhatsApp after approving'));
-    const nx = QS.items[QS.i + 1];   // تحميل مسبق للتالى
+    const nx = QS.items[QS.i + 1];
     if (nx) { img('id', nx).catch(() => {}); if (!rev) img('pay', nx).catch(() => {}); }
   }
   function next() { QS.i++; showItem(); }
@@ -454,7 +441,7 @@ function queueView() {
     if (all && !confirm('Apply to the whole group?')) return;
     working = true;
     const act = QS.mode === 'review' ? 'approveId' : 'approve';
-    const w = (a !== 'reject' && QS.wa) ? window.open('', '_blank') : null;   // لازم يتفتح فورا مع الضغطة
+    const w = (a !== 'reject' && QS.wa) ? window.open('', '_blank') : null;
     try {
       const x = a === 'reject' ? await adm('adminAct', { id: r.id, act: 'reject' })
         : all ? await adm('adminActGroup', { gid: r.gid, act: act }) : await adm('adminAct', { id: r.id, act: act });
@@ -476,9 +463,9 @@ function queueView() {
   loadList();
 }
 
-// ---------- تغيير الحالة (للتصحيح لو دوست على حاجة غلط) ----------
+// ---------- تغيير الحالة ----------
 function statusPicker(r, done) {
-  const L = [['review', 'Card review'], ['pending', 'Awaiting payment'], ['approved', 'Confirmed'], ['rejected', 'Rejected']];
+  const L = [['review', 'Card review'], ['pending', 'Awaiting payment'], ['approved', 'Confirmed'], ['rejected', 'Rejected'], ['cancelled', 'Cancelled']];
   const grp = !!(r.gid && r.gn > 1);
   const chk = h('input', { type: 'checkbox', style: 'width:auto' });
   const ov = h('div', { class: 'ov', onclick: e => { if (e.target === ov) ov.remove(); } });
@@ -505,12 +492,12 @@ function statusPicker(r, done) {
 // ---------- الطلبات ----------
 function ordersView() {
   const v = $('#view'), F = S.f;
-  const ST = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected' };
-  const LBL = { review: 'Card review', receipt: 'Receipt uploaded (to confirm)', awaitpay: 'Awaiting payment (no receipt)', pending: 'Awaiting payment (all)', approved: 'Confirmed', rejected: 'Rejected', entered: 'Checked in', all: 'All' };
-  const QF = [['review', 'Cards to review'], ['receipt', 'Receipts to confirm'], ['awaitpay', 'Awaiting payment']];
+  const ST = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected', cancelled: 'Cancelled' };
+  const LBL = { review: 'Card review', receipt: 'Receipt uploaded (to confirm)', awaitpay: 'Awaiting payment (no receipt)', pending: 'Awaiting payment (all)', approved: 'Confirmed', rejected: 'Rejected', cancelled: 'Cancelled', entered: 'Checked in', all: 'All' };
+  const QF = [['review', 'Cards to review'], ['receipt', 'Receipts to confirm'], ['awaitpay', 'Awaiting payment'], ['cancelled', 'Cancelled']];
   const opt = (val, t) => h('option', { value: val }, t);
   let qt = null;
-  const q = h('input', { placeholder: 'Search by name or phone', value: F.q, oninput: () => { clearTimeout(qt); qt = setTimeout(() => { F.q = q.value; F.page = 1; load(); }, 400); } });
+  const q = h('input', { placeholder: 'Search by name, phone or serial', value: F.q, oninput: () => { clearTimeout(qt); qt = setTimeout(() => { F.q = q.value; F.page = 1; load(); }, 400); } });
   const fs = h('select', { onchange: () => { F.status = fs.value; F.page = 1; load(); } }, ...Object.keys(LBL).map(k => opt(k, LBL[k])));
   fs.value = F.status;
   const fd = h('select', { onchange: () => { F.day = fd.value; F.page = 1; load(); } }, opt('', 'All days'), opt('Friday', 'Friday'), opt('Saturday', 'Saturday'));
@@ -523,7 +510,7 @@ function ordersView() {
   v.replaceChildren(h('div', { class: 'row' }, q, fs, fd), qf, h('div', { style: 'height:12px' }), h('div', { class: 'tw' }, table), h('div', { class: 'pg' }, prevB, info, nextB));
 
   async function viewImg(fn, r, title) { try { modal(await adm(fn, { id: r.id }), r.name + ' - ' + title); } catch (e) { toast(errMsg(e)); } }
-  function paySel(r) {   // طريقة الدفع: Bank / Orange Cash (بتتحدد من هنا وبتتسجل فى الشيتات على طول)
+  function paySel(r) {
     const sel = h('select', { class: 'pay', onchange: async () => {
       const m = sel.value, grp = !!(r.gid && r.gn > 1);
       const all = grp && confirm('Set "' + (m || 'none') + '" for all ' + r.gn + ' people in this group?\n\nOK = whole group\nCancel = only ' + r.name);
@@ -541,10 +528,18 @@ function ordersView() {
     const wa = t => { if (r.wa) acts.append(h('a', { class: 'b wa', href: r.wa, target: '_blank', rel: 'noopener' }, t)); };
     const act = (a, t, cls, openWa) => add(t, async ev => {
       if (a === 'reject' && !confirm('Reject ' + r.name + "'s request?")) return;
+      if (a === 'cancel') {
+        const msg = r.status === 'approved'
+          ? 'Cancel ' + r.name + "'s booking?\n\nRefund amount: " + r.amount + " EGP (" + (r.pay || 'No payment method') + ")\nThis will be recorded in the Refunds column."
+          : 'Cancel ' + r.name + "'s booking?";
+        if (!confirm(msg)) return;
+      }
       const btn = ev.currentTarget; btn.disabled = true;
-      const w = openWa ? window.open('', '_blank') : null;   // لازم يتفتح فورا مع الضغطة عشان المتصفح ما يمنعوش
+      const w = openWa ? window.open('', '_blank') : null;
       try {
         const x = await adm('adminAct', { id: r.id, act: a });
+        if (x.refund > 0) toast('Booking cancelled - Refund recorded: ' + x.refund + ' EGP', 6000);
+        else if (a === 'cancel') toast('Booking cancelled', 4000);
         if (x.msg) toast(tr(x.msg), 6000);
         if (w) { if (x.wa) w.location = x.wa; else w.close(); }
         else if (openWa && x.wa) toast('Browser blocked WhatsApp.', 9000, x.wa);
@@ -564,11 +559,44 @@ function ordersView() {
       } catch (e) { if (w) w.close(); toast(errMsg(e)); }
       load();
     }, cls);
+
     if (r.hasId) add('ID card', () => viewImg('adminGetId', r, 'ID card'), 'ghost');
     if (r.hasPay) add('Receipt', () => viewImg('adminGetPay', r, 'Transfer receipt'), 'ghost');
-    if (r.status === 'review') { act('approveId', 'Approve + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gr > 1) actGroup('approveId', 'Approve all ' + r.gr + ' cards in group', 'ghost'); }
-    else if (r.status === 'pending') { wa('WhatsApp (payment link)'); act('approve', 'Confirm payment + WhatsApp', '', true); act('reject', 'Reject', 'red'); if (r.gid && r.gp > 1) actGroup('approve', 'Confirm payment for all ' + r.gp + ' in group', 'ghost'); }
-    else if (r.status === 'approved') { wa('WhatsApp (ticket)'); }
+
+    if (r.status === 'review') {
+      act('approveId', 'Approve + WhatsApp', '', true);
+      act('reject', 'Reject', 'red');
+      if (r.gid && r.gr > 1) actGroup('approveId', 'Approve all ' + r.gr + ' cards in group', 'ghost');
+    } else if (r.status === 'pending') {
+      wa('WhatsApp (payment link)');
+      act('approve', 'Confirm payment + WhatsApp', '', true);
+      act('reject', 'Reject', 'red');
+      if (r.gid && r.gp > 1) actGroup('approve', 'Confirm payment for all ' + r.gp + ' in group', 'ghost');
+    } else if (r.status === 'approved') {
+      wa('WhatsApp (ticket)');
+    }
+
+    // زر إلغاء الباص فقط (لو حاجز باص وحالته نشطة)
+    if (r.bus && r.status !== 'rejected' && r.status !== 'cancelled') {
+      add('Cancel bus', async ev => {
+        const msg = r.status === 'approved'
+          ? 'Cancel BUS ONLY for ' + r.name + '?\n\nTicket price will drop from ' + r.amount + ' to 200 EGP.\nRefund to record: ' + Math.max(0, r.amount - 200) + ' EGP (' + (r.pay || 'No payment method') + ').'
+          : 'Cancel BUS ONLY for ' + r.name + '? (Price will update to 200 EGP)';
+        if (!confirm(msg)) return;
+        const btn = ev.currentTarget; btn.disabled = true;
+        try {
+          const x = await adm('adminCancelBus', { id: r.id });
+          toast(x.refund > 0 ? ('Bus cancelled - Refund recorded: ' + x.refund + ' EGP') : 'Bus cancelled - Price updated to ' + x.newAmount + ' EGP', 6000);
+        } catch (e) { toast(errMsg(e), 6000); }
+        load();
+      }, 'warn');
+    }
+
+    // زر إلغاء الحجز بالكامل (لو حالته نشطة ولم يدخل الإيفنت)
+    if (r.status !== 'rejected' && r.status !== 'cancelled' && !r.usedAt) {
+      act('cancel', 'Cancel booking', 'red');
+    }
+
     add('Change status', () => statusPicker(r, load), 'ghost');
     const wait = r.status === 'review' ? 'waiting ' + ago(r.created)
       : r.status === 'pending' ? (r.hasPay ? 'receipt ' + ago(r.payAt || r.idokAt || r.created) : 'hold ' + ago(r.idokAt || r.created)) : '';
@@ -597,7 +625,7 @@ function ordersView() {
   load();
 }
 
-// ---------- سكانر الباب (وضع الكشك) ----------
+// ---------- سكانر الباب ----------
 function scanView() {
   const v = $('#view');
   const day = h('select', { onchange: () => { save(); counts(); } }, h('option', { value: 'Friday' }, 'Friday'), h('option', { value: 'Saturday' }, 'Saturday'));
@@ -607,7 +635,7 @@ function scanView() {
   const kt = h('div', { class: 'kt' }, '-'), kb = h('i', { style: 'width:0%' });
   const kbar = h('div', { class: 'box kbar', style: 'display:none' }, kt, h('div', { class: 'bar' }, kb));
   const last = h('div', { class: 'last mut' }, 'Ready to scan');
-  async function counts() {   // "دخلوا 312 من 620"
+  async function counts() {
     try {
       const r = await api(Object.assign({ action: 'gateStats', day: S.day }, auth()));
       if (r.ok && r.data && S.tab === 'scan') {
@@ -673,12 +701,11 @@ function scanView() {
       q, h('button', { class: 'alt', onclick: find }, 'Search'), found,
       h('p', { class: 'mut', style: 'font-size:.85rem;margin-bottom:0' }, "Compare the name with the person's ID before checking in."))));
   counts(); timer = setInterval(counts, 20000);
-  // لو الصفحة اتفتحت من QR بكاميرا الموبايل العادية (?s=التوكن)
   if (S.urlToken) { const t = S.urlToken; S.urlToken = ''; history.replaceState(null, '', location.pathname); check(t); }
   toggleCam();
 }
 
-// ---------- الباصات: تسجيل الركوب (ذهاب وعودة) - وضع الكشك ----------
+// ---------- الباصات ----------
 function busView() {
   const v = $('#view');
   const st = { day: ls.get('bd') || 'Friday', dir: ls.get('bdir') || 'out', no: Number(ls.get('bn')) || 1, prev: ls.get('bp') === '1' };
@@ -799,7 +826,6 @@ function busView() {
   toggleCam();
 }
 
-// ---------- التشغيل ----------
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 (async () => {
   const role = ls.get('role'), cred = ls.get('cred');
