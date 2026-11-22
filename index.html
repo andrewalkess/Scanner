@@ -584,8 +584,8 @@ function ordersView() {
       wa('WhatsApp (ticket)');
     }
 
-    // زر تغيير اليوم (الجمعة <-> السبت)
-    if (r.status !== 'rejected' && r.status !== 'cancelled' && !r.usedAt) {
+// زر تغيير اليوم (الجمعة <-> السبت) - للأدمن الرئيسي فقط
+    if (S.master && r.status !== 'rejected' && r.status !== 'cancelled' && !r.usedAt) {
       const targetDay = r.dayKey === 'Friday' ? 'Saturday' : 'Friday';
       add('Switch to ' + targetDay, async ev => {
         if (!confirm('Move ' + r.name + ' from ' + dEn(r.day) + ' to ' + targetDay + '?')) return;
