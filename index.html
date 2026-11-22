@@ -335,7 +335,6 @@ function homeView() {
             h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(Math.max(0, x.approved - x.entered))), h('small', {}, 'Not arrived yet')),
             h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.bus || 0)), h('small', {}, 'Bus riders (confirmed)'))),
           h('p', { class: 'mut', style: 'margin:10px 0 0' }, 'Attendance of confirmed: ' + pct + '%'), h('div', { class: 'bar' }, h('i', { style: 'width:' + pct + '%' })),
-          h('p', { class: 'mut', style: 'margin:0' }, 'Confirmed seats: ' + x.approved + ' of ' + x.capacity + ' (' + cap + '%)'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, cap) + '%;background:' + fillColor(cap, WARN_PCT, FULL_PCT) })),
           busRows(k));
       });
       const st = d.status, L = { review: 'Card review', pending: 'Awaiting payment', approved: 'Confirmed', rejected: 'Rejected', cancelled: 'Cancelled' };
