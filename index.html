@@ -127,6 +127,7 @@ const MSG = [
   [/^اليوم غير صحيح$/, 'Invalid day'], [/^اختار اليوم$/, 'Choose a day'], [/^خطأ فى الطلب$/, 'Request error'], [/^أمر غير معروف$/, 'Unknown command'],
   [/^غير موجود$/, 'Not found'], [/^التذكرة مستخدمة$/, 'Ticket already used'], [/^الطلب مش فى المرحلة دى$/, 'Request is not at this stage'],
   [/^اليوم اكتمل العدد$/, 'This day is full'], [/^لا توجد صورة$/, 'No image'], [/^لا توجد صورة تحويل$/, 'No transfer receipt'],
+  [/^للأدمن الرئيسى فقط$/, 'Main admin only'],
   [/^الكود ليوم (.+)$/, m => 'Code is for ' + dEn(m[1])], [/^التذكرة ليوم (.+)$/, m => 'Ticket is for ' + dEn(m[1])],
   [/^الكود مستخدم قبل كده: (.*) \((.*)\)$/, m => 'Code already used - entered: ' + m[1] + ' (' + latin(m[2]) + ')'],
   [/^الكود مستخدم قبل كده \((.*)\)$/, m => 'Code already used (' + latin(m[1]) + ')'], [/^دخل قبل كده \((.*)\)$/, m => 'Already checked in (' + latin(m[1]) + ')'],
@@ -311,12 +312,11 @@ function homeView() {
           const seats = cfg.n * cfg.cap, bp = (x.bus || 0) * 100 / seats;
           if (bp >= BUS_FULL_PCT) A('bad', '🚌 ' + dEn(x.label) + ': bus seats are full (' + x.bus + '/' + seats + ' riders confirmed)');
           else if (bp >= BUS_WARN_PCT) A('warn', '🚌 ' + dEn(x.label) + ': bus seats almost full (' + x.bus + '/' + seats + ' riders confirmed)');
-          const b = (d.bus || {})[k] || {};
-          [['out', 'outbound'], ['back', 'return']].forEach(([dr, lb]) => (b[dr] || []).forEach((c, i) => {
+          (d.bus[k] || []).forEach((c, i) => {
             const pp = c * 100 / cfg.cap;
-            if (pp >= BUS_FULL_PCT) A('bad', '🚌 ' + dEn(x.label) + ' ' + lb + ': Bus ' + (i + 1) + ' is full (' + c + '/' + cfg.cap + ')');
-            else if (pp >= BUS_WARN_PCT) A('warn', '🚌 ' + dEn(x.label) + ' ' + lb + ': Bus ' + (i + 1) + ' is almost full (' + c + '/' + cfg.cap + ')');
-          }));
+            if (pp >= BUS_FULL_PCT) A('bad', '🚌 ' + dEn(x.label) + ': Bus ' + (i + 1) + ' is full (' + c + '/' + cfg.cap + ')');
+            else if (pp >= BUS_WARN_PCT) A('warn', '🚌 ' + dEn(x.label) + ': Bus ' + (i + 1) + ' is almost full (' + c + '/' + cfg.cap + ')');
+          });
         }
       });
       const alerts = al.length ? h('div', {}, ...al) : h('div', { class: 'alert good' }, '✔ No alerts - everything looks normal');
@@ -324,9 +324,8 @@ function homeView() {
       const busRows = k => {
         if (!cfg || !d.bus || !d.bus[k]) return null;
         return h('div', { style: 'margin-top:12px' }, h('b', {}, 'Bus fill'),
-          ...[['out', 'Outbound'], ['back', 'Return']].map(([dr, lb]) => h('div', { style: 'margin-top:6px' }, h('span', { class: 'mut' }, lb),
-            h('div', { class: 'bgrid' }, ...(d.bus[k][dr] || []).map((c, i) => { const p = c * 100 / cfg.cap;
-              return h('div', { class: 'bm' }, h('small', {}, 'Bus ' + (i + 1)), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, p) + '%;background:' + fillColor(p, BUS_WARN_PCT, BUS_FULL_PCT) })), h('small', {}, c + '/' + cfg.cap)); }))))); };
+          h('div', { class: 'bgrid', style: 'margin-top:6px' }, ...(d.bus[k] || []).map((c, i) => { const p = c * 100 / cfg.cap;
+            return h('div', { class: 'bm' }, h('small', {}, 'Bus ' + (i + 1)), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, p) + '%;background:' + fillColor(p, BUS_WARN_PCT, BUS_FULL_PCT) })), h('small', {}, c + '/' + cfg.cap)); }))); };
       const days = Object.keys(d.days).map(k => {
         const x = d.days[k], pct = x.approved ? Math.round(x.entered * 100 / x.approved) : 0, cap = Math.round(x.approved * 100 / x.capacity);
         return h('div', { class: 'box' }, h('h2', { style: 'margin:0 0 8px' }, dEn(x.label)),
@@ -584,7 +583,7 @@ function ordersView() {
       wa('WhatsApp (ticket)');
     }
 
-// زر تغيير اليوم (الجمعة <-> السبت) - للأدمن الرئيسي فقط
+    // زر تغيير اليوم (الجمعة <-> السبت) - للأدمن الرئيسي فقط
     if (S.master && r.status !== 'rejected' && r.status !== 'cancelled' && !r.usedAt) {
       const targetDay = r.dayKey === 'Friday' ? 'Saturday' : 'Friday';
       add('Switch to ' + targetDay, async ev => {
@@ -745,18 +744,17 @@ function scanView() {
 // ---------- الباصات ----------
 function busView() {
   const v = $('#view');
-  const st = { day: ls.get('bd') || 'Friday', dir: ls.get('bdir') || 'out', no: Number(ls.get('bn')) || 1, prev: ls.get('bp') === '1' };
+  const st = { day: ls.get('bd') || 'Friday', no: Number(ls.get('bn')) || 1, prev: ls.get('bp') === '1' };
   let stats = null;
   const day = h('select', { onchange: changed }, h('option', { value: 'Friday' }, 'Friday'), h('option', { value: 'Saturday' }, 'Saturday'));
-  const dir = h('select', { onchange: changed }, h('option', { value: 'out' }, 'Outbound trip'), h('option', { value: 'back' }, 'Return trip'));
   const prev = h('input', { type: 'checkbox', style: 'width:auto', onchange: save }); prev.checked = st.prev;
-  day.value = st.day; dir.value = st.dir;
+  day.value = st.day;
   const last = h('div', { class: 'last mut' }, 'Ready to scan');
   const kt = h('div', { class: 'kt' }, '-'), kb = h('i', { style: 'width:0%' });
   const kbar = h('div', { class: 'box kbar' }, kt, h('div', { class: 'bar' }, kb));
   const grid = h('div', { class: 'busgrid' });
   const missingBox = h('div', {});
-  function save() { st.day = day.value; st.dir = dir.value; st.prev = prev.checked; ls.put('bd', st.day); ls.put('bdir', st.dir); ls.put('bn', String(st.no)); ls.put('bp', st.prev ? '1' : '0'); }
+  function save() { st.day = day.value; st.prev = prev.checked; ls.put('bd', st.day); ls.put('bn', String(st.no)); ls.put('bp', st.prev ? '1' : '0'); }
   function changed() { save(); missingBox.replaceChildren(); refresh(); }
   function draw() {
     const n = stats ? stats.buses : 6, cap = stats ? stats.cap : 50;
@@ -771,10 +769,10 @@ function busView() {
     }
   }
   async function refresh() {
-    try { const r = await api(Object.assign({ action: 'busStats', day: st.day, dir: st.dir }, auth())); if (r.ok && S.tab === 'bus') { stats = r.data; draw(); } } catch (e) {}
+    try { const r = await api(Object.assign({ action: 'busStats', day: st.day }, auth())); if (r.ok && S.tab === 'bus') { stats = r.data; draw(); } } catch (e) {}
   }
   function present(r) {
-    const chips = ['Bus ' + st.no, dEn(r.day || st.day), st.dir === 'out' ? 'Outbound' : 'Return']; if (st.prev) chips.push('PREVIEW - not recorded');
+    const chips = ['Bus ' + st.no, dEn(r.day || st.day)]; if (st.prev) chips.push('PREVIEW - not recorded');
     const kind = r.warn ? 'warn' : r.ok ? 'good' : 'bad';
     flash(kind, r.warn ? 'ALREADY BOARDED' : r.ok ? 'BOARDED' : 'DENIED', r.name || '', r.serial || '', chips, kind === 'good' ? '' : tr(r.msg), kind === 'good' ? FLASH_OK_MS : FLASH_BAD_MS);
     last.textContent = (kind === 'good' ? '✔ ' : kind === 'warn' ? '⚠ ' : '✖ ') + (r.name || tr(r.msg));
@@ -783,7 +781,7 @@ function busView() {
     if (busy) return; busy = true; save();
     last.textContent = 'Checking...';
     try {
-      const r = await api(Object.assign(body, { day: st.day, dir: st.dir, bus: st.no, preview: st.prev }, auth()), 20000);
+      const r = await api(Object.assign(body, { day: st.day, bus: st.no, preview: st.prev }, auth()), 20000);
       present(r);
       if (r.ok && !st.prev) { found.replaceChildren(); q.value = ''; }
     } catch (e) { flash('bad', 'NO CONNECTION', '', '', [], offline, 3500); }
@@ -821,9 +819,8 @@ function busView() {
   const listsBtn = h('button', { class: 'alt', onclick: async () => {
     listsBtn.disabled = true; listsBox.textContent = 'Loading...';
     try {
-      const d = await adm('adminBusLists', { day: st.day, dir: st.dir });
-      const trip = st.dir === 'out' ? 'outbound' : 'return';
-      const head = b => EVENT + ' - ' + st.day + ' ' + trip + ' - Bus ' + b.bus + ' (' + b.list.length + '/' + d.cap + ')';
+      const d = await adm('adminBusLists', { day: st.day });
+      const head = b => EVENT + ' - ' + st.day + ' - Bus ' + b.bus + ' (' + b.list.length + '/' + d.cap + ')';
       const text = b => head(b) + '\n' + b.list.map((x, i) => (i + 1) + '. #' + x.serial + ' ' + x.name + (x.phone ? ' - ' + x.phone : '')).join('\n');
       const share = async b => {
         const t = text(b);
@@ -832,17 +829,17 @@ function busView() {
       };
       const used = d.buses.filter(b => b.list.length);
       listsBox.replaceChildren(
-        used.length ? h('button', { onclick: () => printBuses(used, head) }, 'Print all buses (' + used.length + ')') : h('p', { class: 'mut' }, 'No one has boarded yet for this day and trip'),
+        used.length ? h('button', { onclick: () => printBuses(used, head) }, 'Print all buses (' + used.length + ')') : h('p', { class: 'mut' }, 'No one has boarded yet for this day'),
         ...used.map(b => h('div', { class: 'found' }, h('b', {}, 'Bus ' + b.bus + ' - ' + b.list.length + ' / ' + d.cap),
           h('div', { class: 'acts' }, h('button', { class: 'b ghost', onclick: () => printBuses([b], head) }, 'Print'), h('button', { class: 'b wa', onclick: () => share(b) }, 'Share (WhatsApp)')),
           h('div', { class: 'mut', style: 'font-size:.85rem;margin-top:6px', dir: 'auto' }, b.list.map(x => '#' + x.serial + ' ' + x.name).join(' - ')))));
     } catch (e) { listsBox.textContent = errMsg(e); }
     listsBtn.disabled = false;
-  } }, 'Bus lists (print / share) for the selected day & trip');
+  } }, 'Bus lists (print / share) for the selected day');
   const missBtn = h('button', { class: 'alt', onclick: async () => {
     missBtn.disabled = true; missingBox.textContent = 'Loading...';
     try {
-      const d = await adm('adminBusReport', { day: st.day, dir: st.dir });
+      const d = await adm('adminBusReport', { day: st.day });
       const tel = m => h('a', { class: 'b', href: 'tel:' + String(m.phone).replace(/\s/g, ''), style: 'padding:5px 10px;margin:0 4px 0 0' }, 'Call');
       const wa = m => m.wa ? h('a', { class: 'b wa', href: 'https://wa.me/' + m.wa, target: '_blank', rel: 'noopener', style: 'padding:5px 10px;margin:0' }, 'WhatsApp') : null;
       missingBox.replaceChildren(h('p', { class: 'mut' }, d.missing.length + ' not boarded yet (of ' + d.expected + ')'),
@@ -855,7 +852,7 @@ function busView() {
   } }, "Who hasn't boarded yet?");
   v.replaceChildren(kbar,
     h('div', { class: 'box' }, grid, h('div', { id: 'reader' }), last, camBtn,
-      h('div', { class: 'row', style: 'margin-top:10px' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day), h('div', {}, h('label', { style: 'margin-top:0' }, 'Trip'), dir)),
+      h('div', { class: 'row', style: 'margin-top:10px' }, h('div', {}, h('label', { style: 'margin-top:0' }, 'Day'), day)),
       h('label', { style: 'display:flex;align-items:center;gap:8px;font-weight:normal' }, prev, 'Preview mode (do not record boarding)')),
     h('div', { class: 'box' }, h('details', { class: 'man' }, h('summary', {}, "If the code doesn't work: search by number, phone or name"), q, h('button', { class: 'alt', onclick: find }, 'Search'), found)),
     ...(S.role === 'admin' ? [h('div', { class: 'box' }, missBtn, missingBox), h('div', { class: 'box' }, listsBtn, listsBox)] : []));
