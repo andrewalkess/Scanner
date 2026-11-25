@@ -128,6 +128,7 @@ const MSG = [
   [/^غير موجود$/, 'Not found'], [/^التذكرة مستخدمة$/, 'Ticket already used'], [/^الطلب مش فى المرحلة دى$/, 'Request is not at this stage'],
   [/^اليوم اكتمل العدد$/, 'This day is full'], [/^لا توجد صورة$/, 'No image'], [/^لا توجد صورة تحويل$/, 'No transfer receipt'],
   [/^للأدمن الرئيسى فقط$/, 'Main admin only'],
+  [/^مبلغ الاسترجاع لازم يكون بين 0 و (\d+)$/, m => 'Refund amount must be between 0 and ' + m[1]],
   [/^الكود ليوم (.+)$/, m => 'Code is for ' + dEn(m[1])], [/^التذكرة ليوم (.+)$/, m => 'Ticket is for ' + dEn(m[1])],
   [/^الكود مستخدم قبل كده: (.*) \((.*)\)$/, m => 'Code already used - entered: ' + m[1] + ' (' + latin(m[2]) + ')'],
   [/^الكود مستخدم قبل كده \((.*)\)$/, m => 'Code already used (' + latin(m[1]) + ')'], [/^دخل قبل كده \((.*)\)$/, m => 'Already checked in (' + latin(m[1]) + ')'],
@@ -327,7 +328,7 @@ function homeView() {
           h('div', { class: 'bgrid', style: 'margin-top:6px' }, ...(d.bus[k] || []).map((c, i) => { const p = c * 100 / cfg.cap;
             return h('div', { class: 'bm' }, h('small', {}, 'Bus ' + (i + 1)), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.min(100, p) + '%;background:' + fillColor(p, BUS_WARN_PCT, BUS_FULL_PCT) })), h('small', {}, c + '/' + cfg.cap)); }))); };
       const days = Object.keys(d.days).map(k => {
-        const x = d.days[k], pct = x.approved ? Math.round(x.entered * 100 / x.approved) : 0, cap = Math.round(x.approved * 100 / x.capacity);
+        const x = d.days[k], pct = x.approved ? Math.round(x.entered * 100 / x.approved) : 0;
         return h('div', { class: 'box' }, h('h2', { style: 'margin:0 0 8px' }, dEn(x.label)),
           h('div', { class: 'kpis' },
             h('div', { class: 'kpi' }, h('div', { class: 'big' }, String(x.entered)), h('small', {}, 'Checked in')),
@@ -533,19 +534,34 @@ function ordersView() {
     const add = (t, fn, cls) => acts.append(h('button', { class: 'b ' + (cls || ''), onclick: fn }, t));
     const wa = t => { if (r.wa) acts.append(h('a', { class: 'b wa', href: r.wa, target: '_blank', rel: 'noopener' }, t)); };
     const act = (a, t, cls, openWa) => add(t, async ev => {
+      let refundVal = undefined;
       if (a === 'reject' && !confirm('Reject ' + r.name + "'s request?")) return;
       if (a === 'cancel') {
-        const msg = r.status === 'approved'
-          ? 'Cancel ' + r.name + "'s booking?\n\nRefund amount: " + r.amount + " EGP (" + (r.pay || 'No payment method') + ")\nThis will be recorded in the Refunds column."
-          : 'Cancel ' + r.name + "'s booking?";
-        if (!confirm(msg)) return;
+        if (r.status === 'approved') {
+          const inp = window.prompt(
+            'Cancel ' + r.name + "'s booking?\n\nPaid amount: " + r.amount + " EGP (" + (r.pay || 'No payment method') + ")\nEnter refund amount (0 to " + r.amount + " EGP):",
+            String(r.amount)
+          );
+          if (inp === null) return;
+          const num = Number(inp.trim());
+          if (inp.trim() === '' || isNaN(num) || num < 0 || num > r.amount) {
+            toast('Invalid refund amount (must be between 0 and ' + r.amount + ')', 5000);
+            return;
+          }
+          refundVal = num;
+        } else {
+          if (!confirm('Cancel ' + r.name + "'s booking?")) return;
+        }
       }
       const btn = ev.currentTarget; btn.disabled = true;
       const w = openWa ? window.open('', '_blank') : null;
       try {
-        const x = await adm('adminAct', { id: r.id, act: a });
-        if (x.refund > 0) toast('Booking cancelled - Refund recorded: ' + x.refund + ' EGP', 6000);
-        else if (a === 'cancel') toast('Booking cancelled', 4000);
+        const payload = { id: r.id, act: a };
+        if (refundVal !== undefined) payload.refund = refundVal;
+        const x = await adm('adminAct', payload);
+        if (a === 'cancel') {
+          toast(r.status === 'approved' ? ('Booking cancelled - Refund recorded: ' + x.refund + ' EGP') : 'Booking cancelled', 6000);
+        }
         if (x.msg) toast(tr(x.msg), 6000);
         if (w) { if (x.wa) w.location = x.wa; else w.close(); }
         else if (openWa && x.wa) toast('Browser blocked WhatsApp.', 9000, x.wa);
